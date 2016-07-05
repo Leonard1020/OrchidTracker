@@ -1,0 +1,38 @@
+/* Empty. Add your own CSS if you like */
+.dot {
+  background: green;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  position: absolute;
+}
+
+.centerMax {
+	max-width:600px;
+	margin:auto;
+}
+
+.submitButton {
+	width:90%;
+	margin-top:15px;
+	margin-bottom:15px;
+}
+
+.highchartsTitle {
+	margin-top: 10px;
+	margin-bottom: 10px;
+	font-size: 18px;
+	font-family: "Lucida Grande", "Lucida Sans Unicode", Arial, Helvetica, sans-serif;
+}
+
+.highchartsSubtitle {
+	font-size: 12px;
+}
+
+.alignCenter {
+	text-align:center;
+}
+
+.borderless {
+	border:0;
+}

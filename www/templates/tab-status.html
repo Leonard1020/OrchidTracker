@@ -1,0 +1,26 @@
+<ion-view view-title="Status" class="centerMax">
+  <ion-content class="padding">
+  <h2>Plot #{{plot.number}}</h2>
+	<div class="card">
+		<div class="item item-text-wrap">
+			Location: {{plot.location.latitude}}, {{plot.location.longitude}}<br>
+			Last Updated: {{plot.updated}}<br>
+			Plot Started: {{plot.started}}<br>
+			Picture?
+		</div>
+	</div>
+	<div class="card">
+		<div class="item item-text-wrap">
+			Soil pH: {{plot.ph}}<br>
+			Soil Moisture: {{plot.moisture}}%<br>
+			Light: {{plot.light}}%
+		</div>
+	</div>
+	<div class="card">
+		<div class="item item-text-wrap">
+			<div>Orchid Count: {{plot.entries[0].flowers.length}}</div>
+			<div>Growth/Decay Rate: 0.00%</div>
+		</div>
+	</div>
+  </ion-content>
+</ion-view>

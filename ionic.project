@@ -1,0 +1,10 @@
+{
+  "name": "Orchid",
+  "app_id": "f621a84f",
+  "proxies": [
+    {
+      "path": "/plots",
+      "proxyUrl": "https://orchid-tracker-server.herokuapp.com/plots"
+    }
+  ]
+}

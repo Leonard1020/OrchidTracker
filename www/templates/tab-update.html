@@ -1,0 +1,49 @@
+<ion-view view-title="Update" class="centerMax">
+	<ion-content>
+		<form name="plotForm">
+			<label class="item item-input">
+				<span class="input-label">Plot #:</span>
+				<input type="number" placeholder="Plot Number" name="number" ng-model="plot.number">
+			</label>
+			<label class="item item-input item-stacked-label">
+				<span class="input-label">Location: {{plot.location.latitude}}, {{plot.location.longitude}}</span>
+				<label class="item-input">
+					<span class="input-label">Latitude:</span>
+					<input type="number" placeholder="Latitude" name="lat" ng-model="plot.location.latitude">
+				</label>
+				<label class="item-input">
+					<span class="input-label">Longitude:</span>
+					<input type="number" placeholder="Longitude" name="long" ng-model="plot.location.longitude">
+				</label>
+			</label>
+			<label class="item item-input item-stacked-label">
+				<span class="input-label">Soil pH: {{plot.ph}}</span>
+				<div class = "range">
+					0<input type="range" name="soilPH" ng-model="plot.ph" step="0.1" max="14">14
+				</div>
+			</label>
+			<label class="item item-input item-stacked-label">
+				<span class="input-label">Soil Moisture: {{plot.moisture}}%</span>
+				<div class = "range">
+					0<input type="range" name="soilMoisture" ng-model="plot.moisture">100
+				</div>
+			</label>
+			<label class="item item-input item-stacked-label">
+				<span class="input-label">Light: {{plot.light}}%</span>
+				<div class = "range">
+					0<input type="range" name="light" ng-model="plot.light">100
+				</div>
+			</label>
+			<label class="item item-input item-stacked-label">
+				<span class="input-label">Soil Description:</span>
+				<textarea placeholder="Soil Description" ng-model="plot.desciption"></textarea>
+			</label>
+			<label class="item item-input">
+				<textarea placeholder="Additional Comments"></textarea>
+			</label>
+			<div style="text-align:center;">
+				<button class="button button-calm submitButton" type="submit" ng-click="updatePlot(plot)">Update</button>
+			</div>
+		</form>
+	</ion-content>
+</ion-view>
