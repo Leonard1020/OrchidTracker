@@ -4,7 +4,7 @@
   "proxies": [
     {
       "path": "/plots",
-      "proxyUrl": "https://orchid-tracker-server.herokuapp.com/plots"
+      "proxyUrl": "https://orchid-tracker.herokuapp.com/plots"
     }
   ]
 }
