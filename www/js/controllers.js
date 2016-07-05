@@ -64,13 +64,19 @@ angular.module('starter.controllers', [])
 					events: {
 						click: function (e) {
 							// find the clicked values and the series
-							var x = e.xAxis[0].value,
-								y = e.yAxis[0].value,
-								series = this.series[0];
-
+							var x = e.xAxis[0].value;
+							var y = e.yAxis[0].value;
+							var series = this.series[0];
+							
 							// Add it
 							series.addPoint([x, y]);
-							chart.setTitle(null, {text: 'Orchid count: ' + series.data.length});
+							
+							var total = 0;
+							for (var set in this.series){
+								total += this.series[set].data.length;
+							}
+							
+							chart.setTitle(null, {text: 'Orchid count: ' + total});
 						}
 					}
 				},
@@ -149,11 +155,17 @@ angular.module('starter.controllers', [])
 						point: {
 							events: {
 								'click': function () {
-									var count = this.series.data.length - 1;
-									if (count > 0) {
-										this.remove();
-										chart.setTitle(null, {text: 'Orchid count: ' + count});
-									}
+									alert("ID: " + this.id +
+										"\nX: " + this.x + "cm" +
+										"\nY: " + this.y + "cm" +
+										"\ndepth: " + this.depth +
+										"\nparentage: " + this.parentage +
+										"\nhealth: " + this.health);
+									//var count = this.series.data.length - 1;
+									//if (count > 0) {
+									//	this.remove();
+									//	chart.setTitle(null, {text: 'Orchid count: ' + count});
+									//}
 								}
 							}
 						},
@@ -164,9 +176,26 @@ angular.module('starter.controllers', [])
 					}
 				},
 				series: [{
-					name: 'Flower Info',
+					name: 'Healthy Plants',
 					color: 'rgba(34,139,34, .5)',
-					data: $scope.plot.entries[0].flowers
+					data: $scope.plot.entries[0].flowers.filter(goodOrchids),
+					marker: {
+						"symbol": "circle"
+					}
+				}, {
+					name: 'Medium Plants',
+					color: 'rgba(229,217,0, .8)',
+					data: $scope.plot.entries[0].flowers.filter(mediumOrchids),
+					marker: {
+						"symbol": "circle"
+					}
+				}, {
+					name: 'Poor Plants',
+					color: 'rgba(255,0,0, .5)',
+					data: $scope.plot.entries[0].flowers.filter(poorOrchids),
+					marker: {
+						"symbol": "circle"
+					}
 				}]
 			});
 			
@@ -195,3 +224,15 @@ angular.module('starter.controllers', [])
 		}
 	}
 });
+
+function goodOrchids(orchid) {
+	return orchid.health == 3;
+};
+
+function mediumOrchids(orchid) {
+	return orchid.health == 2;
+};
+
+function poorOrchids(orchid) {
+	return orchid.health == 1;
+};
