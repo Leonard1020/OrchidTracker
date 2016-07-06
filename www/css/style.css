@@ -36,3 +36,16 @@
 .borderless {
 	border:0;
 }
+
+.popup {
+  width: 80% !important;
+  max-width: 400px !important;
+  height: 80%;
+  max-height: 100% !important;
+}
+
+.dialogCard {
+	width: 100%;
+	margin:auto;
+	margin-bottom: 15px;
+}

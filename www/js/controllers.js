@@ -38,7 +38,10 @@ angular.module('starter.controllers', [])
 
 .controller('GraphCtrl', function($scope) {})
 
-.controller('GridCtrl', function($scope, Plots) {
+.controller('GridCtrl', function($scope, $ionicPopup, Plots) {
+	$scope.depths = ["Deep", "Shallow"];
+	$scope.healths = [{health: "Good", value: 3}, {health: "Medium", value: 2}, {health: "Bad", value: 1}];
+	$scope.parents = ["A", "B", "C", "D", "E", "F"];
 	$scope.scopes = [
 		{id: 0, name: 'Whole Plot'},
 		{id: 1, name: 'Quadrant 1'},
@@ -49,6 +52,37 @@ angular.module('starter.controllers', [])
 	$scope.selectedScope = $scope.scopes[0];
 	
 	var chart;
+	
+	$scope.addPlant = function(callback) {
+		var addPlantDialog = $ionicPopup.show({
+			templateUrl: '../templates/add-plant-dialog.html',
+			title: '<h3>Add a Plant</h3>',
+			scope: $scope,
+			buttons: [
+				{text: 'Cancel'},
+				{
+					text:'Save',
+					type: 'button-positive',
+					onTap: function(e) {
+						if (false /*!$scope.data.wifi*/) {
+							//don't allow the user to close unless he enters wifi password
+							e.preventDefault();
+						} else {
+							return $scope.plant;
+						}
+					}
+				}
+			]
+		});
+		addPlantDialog.then(function(newPlant) {
+			if (newPlant){
+				$scope.plot.entries[0].flowers.push(newPlant);
+				var total = $scope.plot.entries[0].flowers.length
+				chart.setTitle(null, {text: 'Orchid count: ' + total});
+			}
+			callback();
+		});
+	};
 	
 	Plots.get(localStorage.getItem('selectedPlot'))
 		.success(function(response) {
@@ -64,19 +98,32 @@ angular.module('starter.controllers', [])
 					events: {
 						click: function (e) {
 							// find the clicked values and the series
-							var x = e.xAxis[0].value;
-							var y = e.yAxis[0].value;
-							var series = this.series[0];
+							$scope.plant = {
+								x: e.xAxis[0].value,
+								y: e.yAxis[0].value,
+								depth: "Shallow",
+								health: 1,
+								parent: "F",
+								shoots: 0,
+								comment: ""
+							};
 							
-							// Add it
-							series.addPoint([x, y]);
-							
-							var total = 0;
+							var total = 1;
 							for (var set in this.series){
 								total += this.series[set].data.length;
 							}
+							$scope.plant.id = total
 							
-							chart.setTitle(null, {text: 'Orchid count: ' + total});
+							$scope.addPlant(function() {
+								var goodPlants = $scope.plot.entries[0].flowers.filter(goodOrchids);
+								var mediumPlants = $scope.plot.entries[0].flowers.filter(mediumOrchids);
+								var badPlants = $scope.plot.entries[0].flowers.filter(poorOrchids);
+								chart.series[0].setData(goodPlants, true);
+								chart.series[1].setData(mediumPlants, true);
+								chart.series[2].setData(badPlants, true);
+							});
+							
+							
 						}
 					}
 				},

@@ -1,0 +1,55 @@
+<div class="card dialogCard">
+	<div class="item item-divider"> 
+          Plant ID
+	</div>
+	<label class="item item-input">
+		<input type="number" placeholder="Plant ID" name="number" ng-model="plant.id">
+	</label>
+</div>
+<div class="card dialogCard">
+	<div class="item item-divider"> 
+          Location: {{plant.x | number: 2}}cm, {{plant.y | number: 2}}cm
+	</div>
+	<label class="item-input">
+		<span class="input-label">X:</span>
+		<input type="number" placeholder="X" name="xCord" ng-model="plant.x">
+	</label>
+	<label class="item-input">
+		<span class="input-label">Y:</span>
+		<input type="number" placeholder="Y" name="yCord" ng-model="plant.y">
+	</label>
+</div>
+<div class="card dialogCard">
+	<div class="item item-divider">
+          Health
+	</div>
+	<ion-radio ng-model="plant.health" ng-repeat="item in healths" ng-value="item.value" name="health">{{item.health}}</ion-radio>
+</div>
+<div class="card dialogCard">
+	<div class="item item-divider"> 
+          Depth
+	</div>
+	<ion-radio ng-model="plant.depth" ng-repeat="item in depths" ng-value="item" name="depth">{{item}}</ion-radio>
+</div>
+<div class="card dialogCard">
+	<div class="item item-divider"> 
+          Parentage
+	</div>
+	<ion-radio ng-model="plant.parent" ng-repeat="item in parents" ng-value="item" name="parentage">{{item}}</ion-radio>
+</div>
+<div class="card dialogCard">
+	<div class="item item-divider"> 
+          Number of Shoots
+	</div>
+	<label class="item item-input">
+		<input type="number" placeholder="Number of Shoots" name="number" ng-model="plant.shoots">
+	</label>
+</div>
+<div class="card dialogCard">
+	<div class="item item-divider"> 
+          Additional Comments
+	</div>
+	<label class="item item-input">
+		<textarea placeholder="Additional Comments"></textarea>
+	</label>
+</div>
