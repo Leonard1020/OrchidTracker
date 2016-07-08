@@ -14,7 +14,7 @@ angular.module('starter.services', [])
 			return $http.get(serverURL + '/plots/numbers');
 		},
 		put: function(plot, success, error) {
-			return $http.put(serverURL + 'plots/' + plot.number, plot)
+			return $http.put(serverURL + '/plots/' + plot.number, plot)
 							.success(success)
 							.error(error);
 		}
