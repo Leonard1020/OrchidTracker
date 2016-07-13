@@ -208,9 +208,9 @@ angular.module('starter.controllers', [])
 							
 							$scope.entries[0].flowers.sort(function(a,b){return a.id-b.id});
 							
-							var largestID = 1;
+							var largestID = 0;
 							if ($scope.entries[0].flowers.length > 0) {
-								$scope.entries[0].flowers[$scope.entries[0].flowers.length - 1].id;
+								largestID = $scope.entries[0].flowers[$scope.entries[0].flowers.length - 1].id;
 							}
 							$scope.plant.id = largestID + 1;
 							
