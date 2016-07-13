@@ -1,0 +1,61 @@
+<div class="card dialogCard">
+	<div class="item item-divider"> 
+		  Plot Number
+	</div>
+	<label class="item item-input">
+		<input type="number" placeholder="Plot Number" name="number" ng-model="plot.number">
+	</label>
+</div>
+<div class="card dialogCard">
+	<div class="item item-divider">
+		  Location: {{plot.location.latitude | number: 5}}, {{plot.location.longitude | number: 5}}
+	</div>
+	<label class="item-input">
+		<span class="input-label">Latitude:</span>
+		<input type="number" placeholder="Latitude" name="lat" ng-model="plot.location.latitude">
+	</label>
+	<label class="item-input">
+		<span class="input-label">Longitude:</span>
+		<input type="number" placeholder="Longitude" name="long" ng-model="plot.location.longitude">
+	</label>
+</div>
+<div class="card dialogCard">
+	<div class="item item-divider"> 
+		  Soil pH: {{plot.ph}}
+	</div>
+	<div class = "range">
+		0<input type="range" name="soilPH" ng-model="plot.ph" step="0.1" max="14">14
+	</div>
+</div>
+<div class="card dialogCard">
+	<div class="item item-divider"> 
+		  Soil Moisture: {{plot.moisture}}%
+	</div>
+	<div class = "range">
+		0<input type="range" name="soilMoisture" ng-model="plot.moisture">100
+	</div>
+</div>
+<div class="card dialogCard">
+	<div class="item item-divider">
+		  Light: {{plot.light}}%
+	</div>
+	<div class = "range">
+		0<input type="range" name="light" ng-model="plot.light">100
+	</div>
+</div>
+<div class="card dialogCard">
+	<div class="item item-divider"> 
+		  Soil Description
+	</div>
+	<label class="item item-input">
+		<textarea placeholder="Soil Description" ng-model="plot.description"></textarea>
+	</label>
+</div>
+<div class="card dialogCard">
+	<div class="item item-divider"> 
+		  Additional Comments
+	</div>
+	<label class="item item-input">
+		<textarea placeholder="Additional Comments"></textarea>
+	</label>
+</div>

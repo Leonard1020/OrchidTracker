@@ -1,0 +1,69 @@
+<div class="card dialogCard">
+	<div class="item item-divider"> 
+          Plant ID
+	</div>
+	<label class="item">
+		{{info.id}}
+	</label>
+</div>
+<div class="card dialogCard">
+	<div class="item item-divider"> 
+          Created
+	</div>
+	<label class="item">
+		{{info.created}}
+	</label>
+</div>
+<div class="card dialogCard">
+	<div class="item item-divider"> 
+          Location: {{info.x | number: 2}}cm, {{info.y | number: 2}}cm
+	</div>
+	<label class="item-input">
+		<span class="input-label">X:</span>
+		{{info.x}}
+	</label>
+	<label class="item-input">
+		<span class="input-label">Y:</span>
+		{{info.y}}
+	</label>
+</div>
+<div class="card dialogCard">
+	<div class="item item-divider">
+          Health
+	</div>
+	<label class="item">
+		{{healths[info.health - 1].health}}
+	</label>
+</div>
+<div class="card dialogCard">
+	<div class="item item-divider"> 
+          Depth
+	</div>
+	<label class="item">
+		{{info.depth}}
+	</label>
+</div>
+<div class="card dialogCard">
+	<div class="item item-divider"> 
+          Parentage
+	</div>
+	<label class="item">
+		{{info.parentage}}
+	</label>
+</div>
+<div class="card dialogCard">
+	<div class="item item-divider"> 
+          Number of Shoots
+	</div>
+	<label class="item">
+		{{info.shoots}}
+	</label>
+</div>
+<div class="card dialogCard">
+	<div class="item item-divider"> 
+          Additional Comments
+	</div>
+	<label class="item">
+		{{info.comment}}
+	</label>
+</div>
