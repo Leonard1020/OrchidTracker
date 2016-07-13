@@ -207,7 +207,11 @@ angular.module('starter.controllers', [])
 							};
 							
 							$scope.entries[0].flowers.sort(function(a,b){return a.id-b.id});
-							var largestID = $scope.entries[0].flowers[$scope.entries[0].flowers.length - 1].id;
+							
+							var largestID = 1;
+							if ($scope.entries[0].flowers.length > 0) {
+								$scope.entries[0].flowers[$scope.entries[0].flowers.length - 1].id;
+							}
 							$scope.plant.id = largestID + 1;
 							
 							$scope.addPlant(function() {
