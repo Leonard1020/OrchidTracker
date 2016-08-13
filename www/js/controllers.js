@@ -136,7 +136,6 @@ angular.module('starter.controllers', [])
 					text:'Save',
 					type: 'button-positive',
 					onTap: function(e) {
-						console.log($scope.plant);
 						if (findPlantIndexById($scope.plants, $scope.plant.id) || findPlantIndexById($scope.plants, $scope.plant.id) == 0) {
 							$scope.error = "Plant " + $scope.plant.id + " already exists";
 							e.preventDefault();
