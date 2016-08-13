@@ -26,8 +26,8 @@ angular.module('starter.services', [])
 							.success(success)
 							.error(error);
 		},
-		putPlants: function(entries, id, success, error) {
-			return $http.put(serverURL + '/plots/' + id + '/plants', entries)
+		putPlants: function(plants, id, success, error) {
+			return $http.put(serverURL + '/plots/' + id + '/plants', plants)
 							.success(success)
 							.error(error);
 		}

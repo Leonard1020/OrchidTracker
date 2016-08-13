@@ -27,7 +27,7 @@ angular.module('starter.controllers', [])
 			light: 50,
 			description: "",
 			comment: "",
-			entries: []
+			plants: []
 		};
 		
 		var posOptions = {timeout: 10000, enableHighAccuracy: false};
@@ -50,7 +50,16 @@ angular.module('starter.controllers', [])
 					type: 'button-positive',
 					onTap: function(e) {
 						if ($scope.plotNumbers.includes($scope.plot.number)) {
-							//Plot number already exists
+							$scope.error = "Plot " + $scope.plot.number + " already exists";
+							e.preventDefault();
+						} else if ($scope.plot.number < 1) {
+							$scope.error = "Invalid Plot Number";
+							e.preventDefault();
+						} else if ($scope.plot.location.latitude < -90 || $scope.plot.location.latitude > 90) {
+							$scope.error = "Latitude must be between -90 and 90";
+							e.preventDefault();
+						} else if ($scope.plot.location.longitude < -180 || $scope.plot.location.longitude > 180) {
+							$scope.error = "Longitude must be between -180 and 180";
 							e.preventDefault();
 						} else {
 							var date = new Date();
@@ -79,6 +88,7 @@ angular.module('starter.controllers', [])
 	Plots.get(localStorage.getItem('selectedPlot'))
 		.success(function(response) {
 			$scope.plot = response;
+			$scope.plantCount = $scope.plot.plants.filter(getLivingPlants).length;
 		});
 })
 
@@ -126,48 +136,30 @@ angular.module('starter.controllers', [])
 					text:'Save',
 					type: 'button-positive',
 					onTap: function(e) {
-						if (false /*!$scope.data.wifi*/) {
-							//don't allow the user to close unless he enters wifi password
+						console.log($scope.plant);
+						if (findPlantIndexById($scope.plants, $scope.plant.id)) {
+							$scope.error = "Plant " + $scope.plant.id + " already exists";
+							e.preventDefault();
+						} else if ($scope.plant.id < 1) {
+							$scope.error = "Invalid Plant Id";
+							e.preventDefault();
+						} else if ($scope.plant.x < 0 || $scope.plant.x > 200 ||
+									$scope.plant.y < 0 || $scope.plant.y > 200) {
+							$scope.error = "Location must be between 0 and 200";
+							e.preventDefault();
+						} else if ($scope.plant.updates[0].shoots < 0) {
+							$scope.error = "Number of shoots cannot be negative";
 							e.preventDefault();
 						} else {
-							$scope.plant.created = new Date();
-							$scope.entries[0].flowers.push($scope.plant);
-							var total = $scope.entries[0].flowers.length
+							$scope.error = "";
+							var startingDate = new Date();
+							$scope.plant.started = startingDate;
+							$scope.plant.updates[0].updated = startingDate;
+							$scope.plants.push($scope.plant);
+							var total = $scope.plants.filter(getLivingPlants).length;
 							chart.setTitle(null, {text: 'Orchid count: ' + total});
 							
-							Plots.putPlants($scope.entries, $scope.plotNumber, function(response) {
-								callback();
-							}, function(response) {
-								console.log('Error: ' + response);
-							});
-						}
-					}
-				}
-			]
-		});
-	};
-	
-	$scope.plantInfo = function(callback) {
-		$ionicPopup.show({
-			templateUrl: '../templates/plant-info-dialog.html',
-			title: '<h3>Add a Plant</h3>',
-			scope: $scope,
-			buttons: [
-				{text: 'Cancel'},
-				{
-					text:'Save',
-					type: 'button-positive',
-					onTap: function(e) {
-						if (false /*!$scope.data.wifi*/) {
-							//don't allow the user to close unless he enters wifi password
-							e.preventDefault();
-						} else {
-							$scope.plant.created = new Date();
-							$scope.entries[0].flowers.push($scope.plant);
-							var total = $scope.entries[0].flowers.length
-							chart.setTitle(null, {text: 'Orchid count: ' + total});
-							
-							Plots.putPlants($scope.entries, $scope.plotNumber, function(response) {
+							Plots.putPlants($scope.plants, $scope.plotNumber, function(response) {
 								callback();
 							}, function(response) {
 								console.log('Error: ' + response);
@@ -181,10 +173,7 @@ angular.module('starter.controllers', [])
 	
 	Plots.getPlants($scope.plotNumber)
 		.success(function(response) {
-			$scope.entries = response;
-			if ($scope.entries.length == 0) {
-				$scope.entries.push({updated: new Date(), flowers: []})
-			}
+			$scope.plants = response;
 			
 			var grid = $('#grid');
 			grid.highcharts({
@@ -200,24 +189,28 @@ angular.module('starter.controllers', [])
 								x: e.xAxis[0].value,
 								y: e.yAxis[0].value,
 								depth: "Deep",
-								health: 1,
 								parent: "A",
-								shoots: 0,
-								comment: ""
+								comment: "",
+								updates: [
+									{
+										health: 1,
+										shoots: 0
+									}
+								]
 							};
-							
-							$scope.entries[0].flowers.sort(function(a,b){return a.id-b.id});
+							$scope.plants.sort(function(a,b){return a.id-b.id});
 							
 							var largestID = 0;
-							if ($scope.entries[0].flowers.length > 0) {
-								largestID = $scope.entries[0].flowers[$scope.entries[0].flowers.length - 1].id;
+							if ($scope.plants.length > 0) {
+								largestID = $scope.plants[$scope.plants.length - 1].id;
 							}
 							$scope.plant.id = largestID + 1;
 							
 							$scope.addPlant(function() {
-								var goodPlants = $scope.entries[0].flowers.filter(goodOrchids);
-								var mediumPlants = $scope.entries[0].flowers.filter(mediumOrchids);
-								var badPlants = $scope.entries[0].flowers.filter(poorOrchids);
+								var livingPlants = $scope.plants.filter(getLivingPlants);
+								var goodPlants = livingPlants.filter(goodOrchids);
+								var mediumPlants = livingPlants.filter(mediumOrchids);
+								var badPlants = livingPlants.filter(poorOrchids);
 								chart.series[0].setData(goodPlants, true);
 								chart.series[1].setData(mediumPlants, true);
 								chart.series[2].setData(badPlants, true);
@@ -229,7 +222,7 @@ angular.module('starter.controllers', [])
 					text: null
 				},
 				subtitle: {
-					text: 'Orchid count: ' + $scope.entries[0].flowers.length
+					text: 'Orchid count: ' + $scope.plants.filter(getLivingPlants).length
 				},
 				xAxis: {
 					title: {
@@ -302,13 +295,13 @@ angular.module('starter.controllers', [])
 								'click': function () {
 									$scope.info = {
 										id: this.id,
+										started: this.started,
 										x: this.x,
 										y: this.y,
 										depth: this.depth,
 										parentage: this.parent,
-										health: this.health,
-										created: this.created,
-										shoots: this.shoots,
+										health: this.updates[this.updates.length - 1].health,
+										shoots: this.updates[this.updates.length - 1].shoots,
 										comment: this.comment
 									}
 									
@@ -329,16 +322,16 @@ angular.module('starter.controllers', [])
 
 													confirmPopup.then(function(res) {
 														if(res) {
-															console.log($scope.info.id);
-															var index = findPlantIndexById($scope.entries[0].flowers, $scope.info.id);
-															$scope.entries[0].flowers.splice(index, 1);
-															var total = $scope.entries[0].flowers.length
+															var index = findPlantIndexById($scope.plants, $scope.info.id);
+															$scope.plants[index].removed = new Date();
+															var total = $scope.plants.filter(getLivingPlants).length;
 															chart.setTitle(null, {text: 'Orchid count: ' + total});
 															
-															Plots.putPlants($scope.entries, $scope.plotNumber, function(response) {
-																var goodPlants = $scope.entries[0].flowers.filter(goodOrchids);
-																var mediumPlants = $scope.entries[0].flowers.filter(mediumOrchids);
-																var badPlants = $scope.entries[0].flowers.filter(poorOrchids);
+															Plots.putPlants($scope.plants, $scope.plotNumber, function(response) {
+																var livingPlants = $scope.plants.filter(getLivingPlants);
+																var goodPlants = livingPlants.filter(goodOrchids);
+																var mediumPlants = livingPlants.filter(mediumOrchids);
+																var badPlants = livingPlants.filter(poorOrchids);
 																chart.series[0].setData(goodPlants, true);
 																chart.series[1].setData(mediumPlants, true);
 																chart.series[2].setData(badPlants, true);
@@ -363,21 +356,21 @@ angular.module('starter.controllers', [])
 				series: [{
 					name: 'Healthy Plants',
 					color: 'rgba(34,139,34, .5)',
-					data: $scope.entries[0].flowers.filter(goodOrchids),
+					data: $scope.plants.filter(getLivingPlants).filter(goodOrchids),
 					marker: {
 						"symbol": "circle"
 					}
 				}, {
 					name: 'Medium Plants',
 					color: 'rgba(229,217,0, .8)',
-					data: $scope.entries[0].flowers.filter(mediumOrchids),
+					data: $scope.plants.filter(getLivingPlants).filter(mediumOrchids),
 					marker: {
 						"symbol": "circle"
 					}
 				}, {
 					name: 'Poor Plants',
 					color: 'rgba(255,0,0, .5)',
-					data: $scope.entries[0].flowers.filter(poorOrchids),
+					data: $scope.plants.filter(getLivingPlants).filter(poorOrchids),
 					marker: {
 						"symbol": "circle"
 					}
@@ -411,16 +404,20 @@ angular.module('starter.controllers', [])
 });
 
 function goodOrchids(orchid) {
-	return orchid.health == 3;
+	return orchid.updates[orchid.updates.length - 1].health == 3;
 };
 
 function mediumOrchids(orchid) {
-	return orchid.health == 2;
+	return orchid.updates[orchid.updates.length - 1].health == 2;
 };
 
 function poorOrchids(orchid) {
-	return orchid.health == 1;
+	return orchid.updates[orchid.updates.length - 1].health == 1;
 };
+
+function getLivingPlants(plant) {
+	return !plant.removed || plant.removed == "";
+}
 
 function findPlantIndexById(array, id) {
 	for (var i = 0; i < array.length; i++) {
