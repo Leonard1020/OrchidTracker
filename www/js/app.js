@@ -72,6 +72,7 @@ angular.module('starter', ['ionic','ionic.service.core', 'starter.controllers', 
 	  
 	.state('tab.graph', {
 		url: '/graph',
+		cache: false,
 		views: {
 			'tab-graph': {
 				templateUrl: 'templates/tab-graph.html',

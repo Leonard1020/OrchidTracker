@@ -3,18 +3,25 @@
 	<div class="alignCenter">
 		<div class="highchartsTitle">Plants on Plot {{plotNumber}}</div>
 		<div class="highchartsSubtitle">
-			<select class="borderless" name="quadrantSelect" id="quadrantSelect" 
-				ng-options="option.name for option in scopes track by option.id"
-				ng-model="selectedScope"
-				ng-change="updatePlotScope(selectedScope)">
-			</select>
 			<!--
-			on
-			<select class="borderless" name="dateSelect" id="dateSelect"
-				ng-options="option.updated for option in entries"
-				ng-model="entries[0]">
+			From:
+			<select class="borderless" name="startYearSelect" id="startYearSelect"
+				ng-options="year for year in startYears"
+				ng-model="startYear">
+			</select>
+			To:
+			<select class="borderless" name="endYearSelect" id="endYearSelect"
+				ng-options="year for year in endYears"
+				ng-model="endYear">
 			</select>
 			-->
+			<div>
+				<select class="borderless" name="quadrantSelect" id="quadrantSelect" 
+					ng-options="option.name for option in scopes track by option.id"
+					ng-model="selectedScope"
+					ng-change="updatePlotScope(selectedScope)">
+				</select>
+			</div>
 		</div>
 		<div id="grid" style="min-width: 300px; margin: 0 auto"></div>
 	</div>

@@ -107,7 +107,158 @@ angular.module('starter.controllers', [])
 	};
 })
 
-.controller('GraphCtrl', function($scope) {})
+.controller('GraphCtrl', function($scope, $state, $window, $ionicHistory, Plots) {
+	$scope.graphs = ['Number of Plants', 'Current Plot Health', 'Yearly Plot Health'];
+	
+	if ($scope.graphs.indexOf(localStorage.getItem('selectedGraph')) < 0) {
+		localStorage.setItem('selectedGraph', $scope.graphs[0]);
+	};
+	
+	$scope.selectedGraph = localStorage.getItem('selectedGraph');
+		
+	Plots.getPlants(localStorage.getItem('selectedPlot'))
+		.success(function(response) {
+			$scope.plants = response;
+			$scope.years = getYears($scope.plants);
+			createGraph();
+		});
+		
+	$scope.loadGraph = function(selectedGraph) {
+		localStorage.setItem('selectedGraph', selectedGraph);
+		$state.go($state.current, {}, {reload: true});
+	}
+		
+	function createGraph() {
+		if ($scope.selectedGraph == 'Number of Plants') {
+			$('#graph').highcharts({
+				chart: {
+					type: 'column'
+				},
+				title: {
+					text: 'Number of Plants'
+				},
+				xAxis: {
+					categories: $scope.years,
+					crosshair: true
+				},
+				yAxis: {
+					title: {
+						text: 'Number of Plants'
+					},
+					min: 0
+				},
+				legend: {
+					enabled: false
+				},
+				plotOptions: {
+					column: {
+						pointPadding: 0.2,
+						borderWidth: 0
+					}
+				},
+				series: [{
+					name: 'Count',
+					data: getPlantCountPerYear($scope.plants)
+				}]
+			});
+		} else if ($scope.selectedGraph == 'Current Plot Health') {
+			$('#graph').highcharts({
+				chart: {
+					plotBackgroundColor: null,
+					plotBorderWidth: null,
+					plotShadow: false,
+					type: 'pie'
+				},
+				title: {
+					text: 'Current Plot Health'
+				},
+				series: [{
+					name: 'Count',
+					colorByPoint: true,
+					data: [{
+						name: 'Healthy',
+						color: 'rgba(34,139,34, .5)',
+						y: $scope.plants.filter(getLivingPlants).filter(goodOrchids).length
+					}, {
+						name: 'Medium',
+						color: 'rgba(229,217,0, .8)',
+						y: $scope.plants.filter(getLivingPlants).filter(mediumOrchids).length
+					}, {
+						name: 'Poor',
+						color: 'rgba(255,0,0, .5)',
+						y: $scope.plants.filter(getLivingPlants).filter(poorOrchids).length
+					}]
+				}]
+			});
+		} else if ($scope.selectedGraph == 'Yearly Plot Health') {
+			$('#graph').highcharts({
+				chart: {
+					type: 'column'
+				},
+				title: {
+					text: 'Plot Health Breakdown'
+				},
+				xAxis: {
+					categories: $scope.years,
+					crosshair: true
+				},
+				yAxis: {
+					title: {
+						text: 'Number of Plants'
+					},
+					min: 0,
+					stackLabels: {
+						enabled: true,
+						style: {
+							fontWeight: 'bold',
+							color: (Highcharts.theme && Highcharts.theme.textColor) || 'gray'
+						}
+					}
+				},
+				legend: {
+					align: 'right',
+					x: -30,
+					verticalAlign: 'top',
+					y: 25,
+					floating: true,
+					backgroundColor: (Highcharts.theme && Highcharts.theme.background2) || 'white',
+					borderColor: '#CCC',
+					borderWidth: 1,
+					shadow: false
+				},
+				tooltip: {
+					headerFormat: '<b>{point.x}</b><br/>',
+					pointFormat: '{series.name}: {point.y}<br/>Total: {point.stackTotal}'
+				},
+				plotOptions: {
+					column: {
+						stacking: 'normal',
+						dataLabels: {
+							enabled: true,
+							color: (Highcharts.theme && Highcharts.theme.dataLabelsColor) || 'white',
+							style: {
+								textShadow: '0 0 3px black'
+							}
+						}
+					}
+				},
+				series: [{
+					name: 'Healthy',
+					color: 'rgba(34,139,34, .5)',
+					data: getPlantCountPerYear($scope.plants, 3)
+				}, {
+					name: 'Medium',
+					color: 'rgba(229,217,0, .8)',
+					data: getPlantCountPerYear($scope.plants, 2)
+				}, {
+					name: 'Poor',
+					color: 'rgba(255,0,0, .5)',
+					data: getPlantCountPerYear($scope.plants, 1)
+				}]
+			});
+		}
+	};
+})
 
 .controller('GridCtrl', function($scope, $ionicPopup, Plots) {
 	$scope.plotNumber = localStorage.getItem('selectedPlot');
@@ -173,6 +324,10 @@ angular.module('starter.controllers', [])
 	Plots.getPlants($scope.plotNumber)
 		.success(function(response) {
 			$scope.plants = response;
+			$scope.startYears = ['Beginning of Time'];
+			$scope.endYears = ['Today'];
+			$scope.startYear = $scope.startYears[$scope.startYears.length - 1];
+			$scope.endYear = $scope.endYears[$scope.endYears.length - 1];
 			
 			var grid = $('#grid');
 			grid.highcharts({
@@ -416,6 +571,79 @@ function poorOrchids(orchid) {
 
 function getLivingPlants(plant) {
 	return !plant.removed || plant.removed == "";
+};
+
+function getYears(plants) {
+	var years = [];
+	for (plant in plants){
+		for (update in plants[plant].updates) {
+			var year = parseInt(plants[plant].updates[update].updated);
+			if (years.indexOf(year) == -1) {
+				years.push(year);
+			}
+		}
+	}
+	return years.sort(function(a,b){return a-b});
+}
+
+function getPlantCountPerYear(plants, health) {
+	var years = getYears(plants);
+	var counts = [];
+	for (year in years){
+		counts[year] = 0;
+	}
+	for (p in plants){
+		var plant = plants[p];
+		for (u in plant.updates) {
+			var update = plant.updates[u];
+			if (health) {
+				if (update.health == health) {
+					var year = parseInt(update.updated);
+					counts[years.indexOf(year)]++;
+					if (u == plant.updates.length - 1) {
+						var endYear;
+						if (!plant.removed || plant.removed == "") {
+							endYear = parseInt(new Date().getFullYear());
+							for (var i = year + 1; i <= endYear; i++) {
+								counts[years.indexOf(i)]++;
+							}
+						} else {
+							endYear = parseInt(plant.removed);
+							for (var i = year + 1; i < endYear; i++) {
+								counts[years.indexOf(i)]++;
+							}
+						}
+					}
+				}
+			} else {
+				var year = parseInt(update.updated);
+				counts[years.indexOf(year)]++;
+				if (u == plant.updates.length - 1) {
+					var endYear;
+					if (!plant.removed || plant.removed == "") {
+						endYear = parseInt(new Date().getFullYear());
+						for (var i = year + 1; i <= endYear; i++) {
+							counts[years.indexOf(i)]++;
+						}
+					} else {
+						endYear = parseInt(plant.removed);
+						for (var i = year + 1; i < endYear; i++) {
+							counts[years.indexOf(i)]++;
+						}
+					}
+				}
+			}
+		}
+	}
+	return counts;
+}
+
+function getMediumPlantsPerYear(plants) {
+	
+}
+
+function getPoorPlantsPerYear(plants) {
+	
 }
 
 function findPlantIndexById(array, id) {

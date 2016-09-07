@@ -1,7 +1,17 @@
 <ion-view view-title="Graph" class="centerMax">
   <ion-content>
-    Checkout this <a href="https://www.thepolyglotdeveloper.com/2015/08/using-charts-in-your-ionic-framework-mobile-app/">graphing tutorial</a>
-	<br>
-	Or this <a href="http://www.highcharts.com/demo">Highcharts demo</a>
+	<div class="alignCenter">
+		<label class="item item-input item-select">
+			<div class="input-label">
+				Select a Graph
+			</div>
+			<select class="borderless" name="graphSelect" id="graphSelect" 
+				ng-options="graph for graph in graphs"
+				ng-model="selectedGraph"
+				ng-change="loadGraph(selectedGraph)">
+			</select>
+		</label>
+		<div id="graph" style="min-width: 300px; margin: 0 auto"></div>
+	</div>
   </ion-content>
 </ion-view>
