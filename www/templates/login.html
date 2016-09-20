@@ -1,0 +1,30 @@
+<div layout="row" layout-align="center center">
+	<md-progress-circular hide id="circle" md-mode="indeterminate"></md-progress-circular>
+</div>
+<div id="error-sub-title" style="text-align:center; color:red;">
+	{{error}}
+</div>
+<div class="list card no-margin">
+	<ion-input class="item item-input item-stacked-label" >
+		<ion-label >Email</ion-label>
+		<input type="email" name="email" placeholder="Your email..." ng-model="email">
+	</ion-input>
+
+	<ion-input class="item item-input item-stacked-label" >
+		<ion-label >Password</ion-label>
+		<input type="password" name="password" placeholder="Your Password..." ng-model="password">
+	</ion-input>
+
+	<ion-input class="item-input padding">
+		<button class="button button-full" ng-click="cancelLogin()">Cancel</button>
+		<button class="button button-full button-positive" ng-click="loginEmail(email, password)">Login</button>
+	</ion-input>
+</div>
+
+<a href="/signup" class="button button-royal button-clear button-block">
+	Or create an account
+</a>
+
+<a href="/passwordResetForm" class="button button-royal button-clear button-block button-small">
+	I forgot my password
+</a>

@@ -17,6 +17,9 @@ navigation history that also transitions its views in and out.
 			<ion-nav-buttons side="right">
 				<button class="button button-clear icon ion-android-add" ng-click="addPlot()"></button>
 			</ion-nav-buttons>
+			<ion-nav-buttons side="secondary">
+				<button class="button button-clear icon ion-log-in" ng-click="openLoginDialog()"></button>
+			</ion-nav-buttons>
 		</ion-nav-bar>
 
 		<!-- TABS -->
@@ -54,7 +57,7 @@ navigation history that also transitions its views in and out.
 		</ion-header-bar>
 		<ion-content>
 			<ion-list>
-				<ion-item menu-close ng-repeat="number in plotNumbers" ng-click="selectPlot({{number}})">Plot {{number}}</item>
+				<ion-item menu-close ng-repeat="number in plotNumbers" ng-click="selectPlot(number.id)">Plot {{number.number}}</item>
 			</ion-list>
 		</ion-content>
 	</ion-side-menu>

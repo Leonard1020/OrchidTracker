@@ -1,10 +1,10 @@
 angular.module('starter.controllers', [])
 
-.controller('NavCtrl', function($scope, $ionicPopup, $ionicHistory, $state, Plots) {
-	Plots.getNumbers()
-		.success(function(response) {
-			$scope.plotNumbers = response.sort(function(a,b){return a-b});
-		});
+.controller('NavCtrl', function($scope, $ionicPopup, $ionicHistory, $state, AuthService, Plots) {
+	$scope.plotNumbers = [];
+	getPlotNumbers(Plots.all(), function(array) {
+		$scope.plotNumbers = array;
+	});
 		
 	$scope.selectPlot = function(number) {
 		if (localStorage.getItem('selectedPlot') != number) {
@@ -13,8 +13,47 @@ angular.module('starter.controllers', [])
 		};
 	};
 	
+	$scope.openLoginDialog = function() {
+		$scope.error = '';
+		var loginDialog = $ionicPopup.show({
+			templateUrl: '../templates/login.html',
+			title: '<h3>Login</h3>',
+			scope: $scope
+		});
+		$scope.cancelLogin = function() {
+			loginDialog.close();
+		};
+		$scope.loginEmail = function(email, password) {
+			if (!email || !password) {
+					$scope.error = "Enter username and password";
+					return;
+			}
+			$('#circle').show();
+			$scope.account = {
+				email: email,
+				password: password
+			};
+			try {
+			AuthService.loginUser(email, password, function(authData) {
+				console.log("Authenticated successfully with payload:", authData);
+				loginDialog.close();
+			}, function(err) {
+				console.log(email);
+				console.log(password);
+				console.log(err);
+				$scope.error = 'Username and password are incorrect';
+				$('#circle').hide();
+			});
+			} catch (err) {
+				console.log(err);
+				$scope.error = 'Login failed';
+				$('#circle').hide();
+			}
+		};
+	}
+	
 	$scope.addPlot = function() {
-		var largestID = $scope.plotNumbers[$scope.plotNumbers.length - 1];
+		var largestID = $scope.plotNumbers[$scope.plotNumbers.length - 1].number;
 		
 		$scope.plot = {
 			number: largestID + 1,
@@ -63,19 +102,23 @@ angular.module('starter.controllers', [])
 							e.preventDefault();
 						} else {
 							var date = new Date();
-							$scope.plot.started = date;
-							$scope.plot.updated = date;
+							$scope.plot.started = date.toISOString();
+							$scope.plot.updated = date.toISOString();
 							
-							Plots.post($scope.plot, function(response) {
-									localStorage.setItem('selectedPlot', $scope.plot.number)
-									Plots.getNumbers()
-										.success(function(response) {
-											$scope.plotNumbers = response.sort(function(a,b){return a-b});
-										});
-									$state.go('tab.status', null, {reload: true});
-								}, function(response) {
-									console.log('Error: ' + response);
+							Plots.add($scope.plot, function(response) {
+								localStorage.setItem('selectedPlot', $scope.plot.number)
+								getPlotNumbers(Plots.all(), function(array) {
+										$scope.plotNumbers = array;
 								});
+								$state.go('tab.status', null, {reload: true});
+								addPlotDialog.close();
+							}, function(err) {
+								console.log(err);
+								if (err.code == 'PERMISSION_DENIED') {
+									$scope.error = "Permission Denied";
+								}
+							});
+							e.preventDefault();
 						}
 					}
 				}
@@ -85,21 +128,20 @@ angular.module('starter.controllers', [])
 })
 
 .controller('StatusCtrl', function($scope, Plots) {
-	Plots.get(localStorage.getItem('selectedPlot'))
-		.success(function(response) {
-			$scope.plot = response;
-			$scope.plantCount = $scope.plot.plants.filter(getLivingPlants).length;
-		});
+	Plots.get(localStorage.getItem('selectedPlot')).$loaded().then(function(plot) {
+		$scope.plot = plot;
+		if (!plot.plants) {
+			$scope.plot.plants = [];
+		}
+		$scope.plantCount = plot.plants.filter(getLivingPlants).length;
+	});
 })
 
 .controller('UpdateCtrl', function($scope, $state, Plots) {
-	Plots.get(localStorage.getItem('selectedPlot'))
-		.success(function(response) {
-			$scope.plot = response;
-		});
+	$scope.plot = Plots.get(localStorage.getItem('selectedPlot'));
 		
 	$scope.updatePlot = function(plot) {
-		Plots.put(plot, function(response) {
+		Plots.update(plot, function(response) {
 				$state.go('tab.status', null, {reload: true});
 			}, function(response) {
 				console.log('Error: ' + response);
@@ -115,13 +157,12 @@ angular.module('starter.controllers', [])
 	};
 	
 	$scope.selectedGraph = localStorage.getItem('selectedGraph');
-		
-	Plots.getPlants(localStorage.getItem('selectedPlot'))
-		.success(function(response) {
-			$scope.plants = response;
-			$scope.years = getYears($scope.plants);
-			createGraph();
-		});
+	
+	Plots.getPlants(localStorage.getItem('selectedPlot')).then(function(plants) {
+		$scope.plants = plants;
+		$scope.years = getYears($scope.plants);
+		createGraph();
+	});
 		
 	$scope.loadGraph = function(selectedGraph) {
 		localStorage.setItem('selectedGraph', selectedGraph);
@@ -320,219 +361,217 @@ angular.module('starter.controllers', [])
 			]
 		});
 	};
-	
-	Plots.getPlants($scope.plotNumber)
-		.success(function(response) {
-			$scope.plants = response;
-			$scope.startYears = ['Beginning of Time'];
-			$scope.endYears = ['Today'];
-			$scope.startYear = $scope.startYears[$scope.startYears.length - 1];
-			$scope.endYear = $scope.endYears[$scope.endYears.length - 1];
-			
-			var grid = $('#grid');
-			grid.highcharts({
-				chart: {
-					type: 'scatter',
-					zoomType: 'xy',
-					plotBorderWidth: 2,
-					height: grid.width() + 60,
-					events: {
-						click: function (e) {
-							// find the clicked values and the series
-							$scope.plant = {
-								x: e.xAxis[0].value,
-								y: e.yAxis[0].value,
-								depth: "Deep",
-								parent: "A",
-								comment: "",
-								updates: [
-									{
-										health: 1,
-										shoots: 0
-									}
-								]
-							};
-							$scope.plants.sort(function(a,b){return a.id-b.id});
-							
-							var largestID = 0;
-							if ($scope.plants.length > 0) {
-								largestID = $scope.plants[$scope.plants.length - 1].id;
-							}
-							$scope.plant.id = largestID + 1;
-							
-							$scope.addPlant(function() {
-								var livingPlants = $scope.plants.filter(getLivingPlants);
-								var goodPlants = livingPlants.filter(goodOrchids);
-								var mediumPlants = livingPlants.filter(mediumOrchids);
-								var badPlants = livingPlants.filter(poorOrchids);
-								chart.series[0].setData(goodPlants, true);
-								chart.series[1].setData(mediumPlants, true);
-								chart.series[2].setData(badPlants, true);
-							});
+	Plots.getPlants($scope.plotNumber).then(function(plants) {
+		$scope.plants = plants;
+		$scope.startYears = ['Beginning of Time'];
+		$scope.endYears = ['Today'];
+		$scope.startYear = $scope.startYears[$scope.startYears.length - 1];
+		$scope.endYear = $scope.endYears[$scope.endYears.length - 1];
+		
+		var grid = $('#grid');
+		grid.highcharts({
+			chart: {
+				type: 'scatter',
+				zoomType: 'xy',
+				plotBorderWidth: 2,
+				height: grid.width() + 60,
+				events: {
+					click: function (e) {
+						// find the clicked values and the series
+						$scope.plant = {
+							x: e.xAxis[0].value,
+							y: e.yAxis[0].value,
+							depth: "Deep",
+							parent: "A",
+							comment: "",
+							updates: [
+								{
+									health: 1,
+									shoots: 0
+								}
+							]
+						};
+						$scope.plants.sort(function(a,b){return a.id-b.id});
+						
+						var largestID = 0;
+						if ($scope.plants.length > 0) {
+							largestID = $scope.plants[$scope.plants.length - 1].id;
 						}
+						$scope.plant.id = largestID + 1;
+						
+						$scope.addPlant(function() {
+							var livingPlants = $scope.plants.filter(getLivingPlants);
+							var goodPlants = livingPlants.filter(goodOrchids);
+							var mediumPlants = livingPlants.filter(mediumOrchids);
+							var badPlants = livingPlants.filter(poorOrchids);
+							chart.series[0].setData(goodPlants, true);
+							chart.series[1].setData(mediumPlants, true);
+							chart.series[2].setData(badPlants, true);
+						});
 					}
-				},
+				}
+			},
+			title: {
+				text: null
+			},
+			subtitle: {
+				text: 'Orchid count: ' + $scope.plants.filter(getLivingPlants).length
+			},
+			xAxis: {
 				title: {
-					text: null
+					enabled: true,
+					text: ''
 				},
-				subtitle: {
-					text: 'Orchid count: ' + $scope.plants.filter(getLivingPlants).length
+				labels: {
+					enabled: true
 				},
-				xAxis: {
-					title: {
-						enabled: true,
-						text: ''
-					},
-					labels: {
-						enabled: true
-					},
-					min: 0,
-					max: 200,
-					gridLineWidth: 0,
-					minorTickInterval: 25,
-					startOnTick: true,
-					endOnTick: true,
-					showLastLabel: true,
-					plotLines: [{
-						color: '#C0C0C0',
-						dashStyle: 'solid',
-						width: 2,
-						value: 100,
-						zIndex: 3
-					}]
+				min: 0,
+				max: 200,
+				gridLineWidth: 0,
+				minorTickInterval: 25,
+				startOnTick: true,
+				endOnTick: true,
+				showLastLabel: true,
+				plotLines: [{
+					color: '#C0C0C0',
+					dashStyle: 'solid',
+					width: 2,
+					value: 100,
+					zIndex: 3
+				}]
+			},
+			yAxis: {
+				title: {
+					text: ''
 				},
-				yAxis: {
-					title: {
-						text: ''
-					},
-					labels: {
-						enabled: false
-					},
-					min: 0,
-					max: 200,
-					gridLineWidth: 0,
-					minorTickInterval: 25,
-					startOnTick: true,
-					endOnTick: true,
-					showLastLabel: true,
-					plotLines: [{
-						color: '#C0C0C0',
-						dashStyle: 'solid',
-						width: 2,
-						value: 100,
-						zIndex: 3
-					}]
-				},
-				legend: {
+				labels: {
 					enabled: false
 				},
-				plotOptions: {
-					scatter: {
-						marker: {
-							radius: 6,
-							states: {
-								hover: {
-									enabled: true,
-									lineColor: 'rgb(100,100,100)'
-								}
-							},
-						},
+				min: 0,
+				max: 200,
+				gridLineWidth: 0,
+				minorTickInterval: 25,
+				startOnTick: true,
+				endOnTick: true,
+				showLastLabel: true,
+				plotLines: [{
+					color: '#C0C0C0',
+					dashStyle: 'solid',
+					width: 2,
+					value: 100,
+					zIndex: 3
+				}]
+			},
+			legend: {
+				enabled: false
+			},
+			plotOptions: {
+				scatter: {
+					marker: {
+						radius: 6,
 						states: {
 							hover: {
-								marker: {
-									enabled: false
-								}
+								enabled: true,
+								lineColor: 'rgb(100,100,100)'
 							}
 						},
-						point: {
-							events: {
-								'click': function () {
-									$scope.info = {
-										id: this.id,
-										started: this.started,
-										x: this.x,
-										y: this.y,
-										depth: this.depth,
-										parentage: this.parent,
-										health: this.updates[this.updates.length - 1].health,
-										shoots: this.updates[this.updates.length - 1].shoots,
-										comment: this.comment
-									}
-									
-									$ionicPopup.show({
-										templateUrl: '../templates/plant-info-dialog.html',
-										title: '<h3>Plant ' + this.id + '</h3>',
-										scope: $scope,
-										buttons: [
-											{text: 'Cancel'},
-											{
-												text:'Remove',
-												type: 'button-assertive',
-												onTap: function(e) {
-													var confirmPopup = $ionicPopup.confirm({
-														title: 'Remove Plant ' + this.id,
-														template: 'Are you sure you want to remove this plant?'
-													});
-
-													confirmPopup.then(function(res) {
-														if(res) {
-															var index = findPlantIndexById($scope.plants, $scope.info.id);
-															$scope.plants[index].removed = new Date();
-															var total = $scope.plants.filter(getLivingPlants).length;
-															chart.setTitle(null, {text: 'Orchid count: ' + total});
-															
-															Plots.putPlants($scope.plants, $scope.plotNumber, function(response) {
-																var livingPlants = $scope.plants.filter(getLivingPlants);
-																var goodPlants = livingPlants.filter(goodOrchids);
-																var mediumPlants = livingPlants.filter(mediumOrchids);
-																var badPlants = livingPlants.filter(poorOrchids);
-																chart.series[0].setData(goodPlants, true);
-																chart.series[1].setData(mediumPlants, true);
-																chart.series[2].setData(badPlants, true);
-															}, function(response) {
-																console.log('Error: ' + response);
-															});
-														}
-													});
-												}
-											}
-										]
-									});
-								}
+					},
+					states: {
+						hover: {
+							marker: {
+								enabled: false
 							}
-						},
-						tooltip: {
-							headerFormat: '<b>{series.name}</b><br>',
-							pointFormat: '{point.x} cm, {point.y} cm'
 						}
+					},
+					point: {
+						events: {
+							'click': function () {
+								$scope.info = {
+									id: this.id,
+									started: this.started,
+									x: this.x,
+									y: this.y,
+									depth: this.depth,
+									parentage: this.parent,
+									health: this.updates[this.updates.length - 1].health,
+									shoots: this.updates[this.updates.length - 1].shoots,
+									comment: this.comment
+								}
+								
+								$ionicPopup.show({
+									templateUrl: '../templates/plant-info-dialog.html',
+									title: '<h3>Plant ' + this.id + '</h3>',
+									scope: $scope,
+									buttons: [
+										{text: 'Cancel'},
+										{
+											text:'Remove',
+											type: 'button-assertive',
+											onTap: function(e) {
+												var confirmPopup = $ionicPopup.confirm({
+													title: 'Remove Plant ' + this.id,
+													template: 'Are you sure you want to remove this plant?'
+												});
+
+												confirmPopup.then(function(res) {
+													if(res) {
+														var index = findPlantIndexById($scope.plants, $scope.info.id);
+														$scope.plants[index].removed = new Date();
+														var total = $scope.plants.filter(getLivingPlants).length;
+														chart.setTitle(null, {text: 'Orchid count: ' + total});
+														
+														Plots.putPlants($scope.plants, $scope.plotNumber, function(response) {
+															var livingPlants = $scope.plants.filter(getLivingPlants);
+															var goodPlants = livingPlants.filter(goodOrchids);
+															var mediumPlants = livingPlants.filter(mediumOrchids);
+															var badPlants = livingPlants.filter(poorOrchids);
+															chart.series[0].setData(goodPlants, true);
+															chart.series[1].setData(mediumPlants, true);
+															chart.series[2].setData(badPlants, true);
+														}, function(response) {
+															console.log('Error: ' + response);
+														});
+													}
+												});
+											}
+										}
+									]
+								});
+							}
+						}
+					},
+					tooltip: {
+						headerFormat: '<b>{series.name}</b><br>',
+						pointFormat: '{point.x} cm, {point.y} cm'
 					}
-				},
-				series: [{
-					name: 'Healthy Plants',
-					color: 'rgba(34,139,34, .5)',
-					data: $scope.plants.filter(getLivingPlants).filter(goodOrchids),
-					marker: {
-						"symbol": "circle"
-					}
-				}, {
-					name: 'Medium Plants',
-					color: 'rgba(229,217,0, .8)',
-					data: $scope.plants.filter(getLivingPlants).filter(mediumOrchids),
-					marker: {
-						"symbol": "circle"
-					}
-				}, {
-					name: 'Poor Plants',
-					color: 'rgba(255,0,0, .5)',
-					data: $scope.plants.filter(getLivingPlants).filter(poorOrchids),
-					marker: {
-						"symbol": "circle"
-					}
-				}]
-			});
-			
-			chart = grid.highcharts();
+				}
+			},
+			series: [{
+				name: 'Healthy Plants',
+				color: 'rgba(34,139,34, .5)',
+				data: $scope.plants.filter(getLivingPlants).filter(goodOrchids),
+				marker: {
+					"symbol": "circle"
+				}
+			}, {
+				name: 'Medium Plants',
+				color: 'rgba(229,217,0, .8)',
+				data: $scope.plants.filter(getLivingPlants).filter(mediumOrchids),
+				marker: {
+					"symbol": "circle"
+				}
+			}, {
+				name: 'Poor Plants',
+				color: 'rgba(255,0,0, .5)',
+				data: $scope.plants.filter(getLivingPlants).filter(poorOrchids),
+				marker: {
+					"symbol": "circle"
+				}
+			}]
 		});
+		
+		chart = grid.highcharts();
+	});
 		
 	$scope.updatePlotScope = function(item) {
 		if (item.id == 0) {
@@ -653,3 +692,13 @@ function findPlantIndexById(array, id) {
 		}
 	}
 };
+
+function getPlotNumbers(getAll, callback) {
+	var plotNumbers = [];
+	getAll.$loaded().then(function(plots) {
+		for (p in plots) 
+			if (plots[p].number)
+				plotNumbers.push({id: plots[p].$id, number: plots[p].number});
+		callback(plotNumbers.sort(function(a,b){return a-b}))
+	});
+}

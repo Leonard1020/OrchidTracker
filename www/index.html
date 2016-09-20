@@ -23,6 +23,34 @@
 	<script src="https://code.highcharts.com/highcharts.js"></script>
 	<script src="https://code.highcharts.com/modules/exporting.js"></script>
 	
+	<!-- Firebase -->
+	<script src="https://www.gstatic.com/firebasejs/3.4.0/firebase.js"></script>
+	<script>
+		// Initialize Firebase
+		var config = {
+			apiKey: "AIzaSyAwJRXMLvJJuYivdPIoIl8EID5iFJHLoG4",
+			authDomain: "plant-tracker-587e0.firebaseapp.com",
+			databaseURL: "https://plant-tracker-587e0.firebaseio.com",
+			storageBucket: "plant-tracker-587e0.appspot.com",
+			messagingSenderId: "162706976212"
+		};
+		firebase.initializeApp(config);
+	</script>
+	
+	<!-- AngularFire -->
+	<script src="https://cdn.firebase.com/libs/angularfire/2.0.1/angularfire.min.js"></script>
+	
+	<!-- Angular Material style sheet -->
+	<link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/angular_material/1.1.0/angular-material.min.css">
+  
+	<!-- Angular Material requires Angular.js Libraries -->
+	<script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-animate.min.js"></script>
+	<script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-aria.min.js"></script>
+	<script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-messages.min.js"></script>
+
+	<!-- Angular Material Library -->
+	<script src="http://ajax.googleapis.com/ajax/libs/angular_material/1.1.0/angular-material.min.js"></script>
+	
     <!-- cordova script (this will be a 404 during development) -->
     <!-- Cordova is bootstrapped by ionic-platform-web-client, uncomment this if you remove ionic-platform-web-client... -->
 <!-- <script src="cordova.js"></script> -->
