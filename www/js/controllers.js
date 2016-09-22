@@ -5,14 +5,35 @@ angular.module('starter.controllers', [])
 	getPlotNumbers(Plots.all(), function(array) {
 		$scope.plotNumbers = array;
 	});
-		
+
 	$scope.selectPlot = function(number) {
 		if (localStorage.getItem('selectedPlot') != number) {
-			localStorage.setItem('selectedPlot', number)
+			localStorage.setItem('selectedPlot', number);
 			$state.go('tab.status', null, {reload: true});
 		};
 	};
-	
+
+	AuthService.authRequired().then(function(response) {
+		$scope.authRequired = false;
+	}).catch(function(err) {
+		$scope.authRequired = true;
+	});
+
+	$scope.logout = function() {
+		var confirmPopup = $ionicPopup.confirm({
+			title: 'Log Out',
+			template: 'Are you sure you want to log out?'
+		});
+
+		confirmPopup.then(function(res) {
+			if(res) {
+				AuthService.logout();
+				$scope.authRequired = true;
+				$state.reload();
+			}
+		});
+	};
+
 	$scope.openLoginDialog = function() {
 		$scope.error = '';
 		var loginDialog = $ionicPopup.show({
@@ -23,38 +44,105 @@ angular.module('starter.controllers', [])
 		$scope.cancelLogin = function() {
 			loginDialog.close();
 		};
+		$scope.signInWithGoogle = function() {
+			try {
+				AuthService.signInWithGoogle(function(response) {
+					$scope.authRequired = false;
+					loginDialog.close();
+					$state.reload();
+				}, function(err) {
+					$scope.error = 'Error signing in with Google';
+				});
+			} catch (err) {
+				$scope.error = 'Sign in failed';
+			}
+		};
 		$scope.loginEmail = function(email, password) {
 			if (!email || !password) {
 					$scope.error = "Enter username and password";
 					return;
 			}
 			$('#circle').show();
-			$scope.account = {
-				email: email,
-				password: password
-			};
 			try {
-			AuthService.loginUser(email, password, function(authData) {
-				console.log("Authenticated successfully with payload:", authData);
-				loginDialog.close();
-			}, function(err) {
-				console.log(email);
-				console.log(password);
-				console.log(err);
-				$scope.error = 'Username and password are incorrect';
-				$('#circle').hide();
-			});
+				AuthService.loginUser(email, password, function(authData) {
+					$scope.authRequired = false;
+					loginDialog.close();
+					$state.reload();
+				}, function(err) {
+					$scope.error = 'Username and password are incorrect';
+					$('#circle').hide();
+				});
 			} catch (err) {
-				console.log(err);
 				$scope.error = 'Login failed';
 				$('#circle').hide();
 			}
 		};
 	}
-	
+
+	$scope.openPassResetDialog = function() {
+		$scope.error = '';
+		var passResetDialog = $ionicPopup.show({
+			templateUrl: '../templates/resetPassword.html',
+			title: '<h3>Reset Password</h3>',
+			scope: $scope
+		});
+		$scope.cancel = function() {
+			$scope.error = "";
+			passResetDialog.close();
+		};
+		$scope.resetPassword = function(email) {
+			if (!email) {
+				$scope.error = "Enter a valid email";
+			}
+			AuthService.resetPassword(email, function(user) {
+				$scope.error = "";
+				passResetDialog.close();
+			}, function(error) {
+				$scope.error = error.message;
+			});
+		};
+	};
+
+	$scope.openCreateUserDialog = function() {
+		$scope.error = '';
+		var createUserDialog = $ionicPopup.show({
+			templateUrl: '../templates/createUser.html',
+			title: '<h3>Create User</h3>',
+			scope: $scope
+		});
+		$scope.cancel = function() {
+			$scope.error = "";
+			createUserDialog.close();
+		};
+		$scope.createUser = function(email, password, secondPassword) {
+			if (!email) {
+				$scope.error = "Enter a valid email";
+			}
+			if (!password) {
+				$scope.error = "Enter a password";
+				return;
+			}
+			if (password != secondPassword) {
+				$scope.error = "Passwords do not match";
+				return;
+			}
+			$('#createUserCircle').show();
+			AuthService.createUser(email, password, function(user) {
+				$('#createUserCircle').hide();
+				$scope.error = "";
+				$scope.authRequired = false;
+				createUserDialog.close();
+				$scope.cancelLogin();
+			}, function(error) {
+				$scope.error = error.message;
+				$('#createUserCircle').hide();
+			});
+		};
+	}
+
 	$scope.addPlot = function() {
 		var largestID = $scope.plotNumbers[$scope.plotNumbers.length - 1].number;
-		
+
 		$scope.plot = {
 			number: largestID + 1,
 			location: {
@@ -68,7 +156,7 @@ angular.module('starter.controllers', [])
 			comment: "",
 			plants: []
 		};
-		
+
 		var posOptions = {timeout: 10000, enableHighAccuracy: false};
 		navigator.geolocation.getCurrentPosition(function (position) {
 				$scope.plot.location.latitude = position.coords.latitude;
@@ -77,7 +165,7 @@ angular.module('starter.controllers', [])
 			}, function(err) {
 				console.log(err)
 			}, posOptions);
-		
+
 		var addPlotDialog = $ionicPopup.show({
 			templateUrl: '../templates/add-plot-dialog.html',
 			title: '<h3>Add a Plot</h3>',
@@ -101,23 +189,33 @@ angular.module('starter.controllers', [])
 							$scope.error = "Longitude must be between -180 and 180";
 							e.preventDefault();
 						} else {
-							var date = new Date();
-							$scope.plot.started = date.toISOString();
-							$scope.plot.updated = date.toISOString();
-							
-							Plots.add($scope.plot, function(response) {
-								localStorage.setItem('selectedPlot', $scope.plot.number)
-								getPlotNumbers(Plots.all(), function(array) {
-										$scope.plotNumbers = array;
+							var date = new Date().toISOString();
+							$scope.plot.started = date;
+							$scope.plot.updated = date;
+
+							try {
+								Plots.add($scope.plot, function(response) {
+									localStorage.setItem('selectedPlot', $scope.plot.number)
+									getPlotNumbers(Plots.all(), function(array) {
+											$scope.plotNumbers = array;
+									});
+									$state.go('tab.status', null, {reload: true});
+									addPlotDialog.close();
+								}).error(function(err) {
+									console.log(err);
 								});
-								$state.go('tab.status', null, {reload: true});
-								addPlotDialog.close();
-							}, function(err) {
-								console.log(err);
+							} catch (err) {
 								if (err.code == 'PERMISSION_DENIED') {
 									$scope.error = "Permission Denied";
+								} else if (err.message.indexOf("'key'") > -1) {
+									localStorage.setItem('selectedPlot', $scope.plot.number)
+									getPlotNumbers(Plots.all(), function(array) {
+											$scope.plotNumbers = array;
+									});
+									$state.go('tab.status', null, {reload: true});
+									addPlotDialog.close();
 								}
-							});
+							}
 							e.preventDefault();
 						}
 					}
@@ -137,9 +235,15 @@ angular.module('starter.controllers', [])
 	});
 })
 
-.controller('UpdateCtrl', function($scope, $state, Plots) {
+.controller('UpdateCtrl', function($scope, $state, Plots, AuthService) {
 	$scope.plot = Plots.get(localStorage.getItem('selectedPlot'));
-		
+
+	AuthService.authRequired().then(function(response) {
+		$scope.authRequired = false;
+	}).catch(function(err) {
+		$scope.authRequired = true;
+	});
+
 	$scope.updatePlot = function(plot) {
 		Plots.update(plot, function(response) {
 				$state.go('tab.status', null, {reload: true});
@@ -151,24 +255,25 @@ angular.module('starter.controllers', [])
 
 .controller('GraphCtrl', function($scope, $state, $window, $ionicHistory, Plots) {
 	$scope.graphs = ['Number of Plants', 'Current Plot Health', 'Yearly Plot Health'];
-	
+
 	if ($scope.graphs.indexOf(localStorage.getItem('selectedGraph')) < 0) {
 		localStorage.setItem('selectedGraph', $scope.graphs[0]);
 	};
-	
+
 	$scope.selectedGraph = localStorage.getItem('selectedGraph');
-	
+
 	Plots.getPlants(localStorage.getItem('selectedPlot')).then(function(plants) {
-		$scope.plants = plants;
+		$scope.plants = plants ? plants : [];
 		$scope.years = getYears($scope.plants);
 		createGraph();
 	});
-		
+
 	$scope.loadGraph = function(selectedGraph) {
 		localStorage.setItem('selectedGraph', selectedGraph);
 		$state.go($state.current, {}, {reload: true});
+		//$state.reload();
 	}
-		
+
 	function createGraph() {
 		if ($scope.selectedGraph == 'Number of Plants') {
 			$('#graph').highcharts({
@@ -301,7 +406,7 @@ angular.module('starter.controllers', [])
 	};
 })
 
-.controller('GridCtrl', function($scope, $ionicPopup, Plots) {
+.controller('GridCtrl', function($scope, $ionicPopup, AuthService, Plots) {
 	$scope.plotNumber = localStorage.getItem('selectedPlot');
 	$scope.depths = ["Deep", "Shallow"];
 	$scope.healths = [{health: "Bad", value: 1}, {health: "Medium", value: 2}, {health: "Good", value: 3}];
@@ -314,9 +419,15 @@ angular.module('starter.controllers', [])
 		{id: 4, name: 'Quadrant 4'}
 	];
 	$scope.selectedScope = $scope.scopes[0];
-	
+
+	AuthService.authRequired().then(function(response) {
+		$scope.authRequired = false;
+	}).catch(function(err) {
+		$scope.authRequired = true;
+	});
+
 	var chart;
-	
+
 	$scope.addPlant = function(callback) {
 		$ionicPopup.show({
 			templateUrl: '../templates/add-plant-dialog.html',
@@ -343,17 +454,17 @@ angular.module('starter.controllers', [])
 							e.preventDefault();
 						} else {
 							$scope.error = "";
-							var startingDate = new Date();
+							var startingDate = new Date().toISOString();
 							$scope.plant.started = startingDate;
 							$scope.plant.updates[0].updated = startingDate;
 							$scope.plants.push($scope.plant);
 							var total = $scope.plants.filter(getLivingPlants).length;
 							chart.setTitle(null, {text: 'Orchid count: ' + total});
-							
+
 							Plots.putPlants($scope.plants, $scope.plotNumber, function(response) {
 								callback();
-							}, function(response) {
-								console.log('Error: ' + response);
+							}, function(error) {
+								console.log('Error: ' + error);
 							});
 						}
 					}
@@ -362,21 +473,23 @@ angular.module('starter.controllers', [])
 		});
 	};
 	Plots.getPlants($scope.plotNumber).then(function(plants) {
-		$scope.plants = plants;
+		$scope.plants = plants ? plants : [];
 		$scope.startYears = ['Beginning of Time'];
 		$scope.endYears = ['Today'];
 		$scope.startYear = $scope.startYears[$scope.startYears.length - 1];
 		$scope.endYear = $scope.endYears[$scope.endYears.length - 1];
-		
+
 		var grid = $('#grid');
 		grid.highcharts({
 			chart: {
 				type: 'scatter',
 				zoomType: 'xy',
 				plotBorderWidth: 2,
-				height: grid.width() + 60,
 				events: {
 					click: function (e) {
+						if ($scope.authRequired) {
+							return;
+						}
 						// find the clicked values and the series
 						$scope.plant = {
 							x: e.xAxis[0].value,
@@ -392,13 +505,13 @@ angular.module('starter.controllers', [])
 							]
 						};
 						$scope.plants.sort(function(a,b){return a.id-b.id});
-						
+
 						var largestID = 0;
 						if ($scope.plants.length > 0) {
 							largestID = $scope.plants[$scope.plants.length - 1].id;
 						}
 						$scope.plant.id = largestID + 1;
-						
+
 						$scope.addPlant(function() {
 							var livingPlants = $scope.plants.filter(getLivingPlants);
 							var goodPlants = livingPlants.filter(goodOrchids);
@@ -497,7 +610,7 @@ angular.module('starter.controllers', [])
 									shoots: this.updates[this.updates.length - 1].shoots,
 									comment: this.comment
 								}
-								
+
 								$ionicPopup.show({
 									templateUrl: '../templates/plant-info-dialog.html',
 									title: '<h3>Plant ' + this.id + '</h3>',
@@ -508,6 +621,16 @@ angular.module('starter.controllers', [])
 											text:'Remove',
 											type: 'button-assertive',
 											onTap: function(e) {
+												if ($scope.authRequired) {
+													var alertPopup = $ionicPopup.alert({
+														title: 'Not Signed In'
+													});
+													// alertPopup.then(function(res) {
+													// 	plantDialog.close();
+													// });
+													return;
+												}
+
 												var confirmPopup = $ionicPopup.confirm({
 													title: 'Remove Plant ' + this.id,
 													template: 'Are you sure you want to remove this plant?'
@@ -516,10 +639,10 @@ angular.module('starter.controllers', [])
 												confirmPopup.then(function(res) {
 													if(res) {
 														var index = findPlantIndexById($scope.plants, $scope.info.id);
-														$scope.plants[index].removed = new Date();
+														$scope.plants[index].removed = new Date().toISOString();
 														var total = $scope.plants.filter(getLivingPlants).length;
 														chart.setTitle(null, {text: 'Orchid count: ' + total});
-														
+
 														Plots.putPlants($scope.plants, $scope.plotNumber, function(response) {
 															var livingPlants = $scope.plants.filter(getLivingPlants);
 															var goodPlants = livingPlants.filter(goodOrchids);
@@ -569,10 +692,10 @@ angular.module('starter.controllers', [])
 				}
 			}]
 		});
-		
+
 		chart = grid.highcharts();
 	});
-		
+
 	$scope.updatePlotScope = function(item) {
 		if (item.id == 0) {
 			chart.xAxis[0].setExtremes(0,200);
@@ -678,11 +801,11 @@ function getPlantCountPerYear(plants, health) {
 }
 
 function getMediumPlantsPerYear(plants) {
-	
+
 }
 
 function getPoorPlantsPerYear(plants) {
-	
+
 }
 
 function findPlantIndexById(array, id) {
@@ -696,7 +819,7 @@ function findPlantIndexById(array, id) {
 function getPlotNumbers(getAll, callback) {
 	var plotNumbers = [];
 	getAll.$loaded().then(function(plots) {
-		for (p in plots) 
+		for (p in plots)
 			if (plots[p].number)
 				plotNumbers.push({id: plots[p].$id, number: plots[p].number});
 		callback(plotNumbers.sort(function(a,b){return a-b}))

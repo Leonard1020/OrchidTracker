@@ -1,0 +1,27 @@
+<div layout="row" layout-align="center center">
+	<md-progress-circular hide id="createUserCircle" md-mode="indeterminate"></md-progress-circular>
+</div>
+<div id="error-sub-title" style="text-align:center; color:red;">
+	{{error}}
+</div>
+<div class="list card no-margin">
+	<ion-input class="item item-input item-stacked-label" >
+		<ion-label >Email</ion-label>
+		<input type="email" name="email" placeholder="Your email..." ng-model="email">
+	</ion-input>
+
+	<ion-input class="item item-input item-stacked-label" >
+		<ion-label >Password</ion-label>
+		<input type="password" name="password" placeholder="Your Password..." ng-model="password">
+	</ion-input>
+
+  <ion-input class="item item-input item-stacked-label" >
+		<ion-label >Password</ion-label>
+		<input type="password" name="secondPassword" placeholder="Re-enter Password..." ng-model="secondPassword">
+	</ion-input>
+
+	<ion-input class="item-input padding">
+		<button class="button button-full" ng-click="cancel()">Cancel</button>
+		<button class="button button-full button-positive" ng-click="createUser(email, password, secondPassword)">Create User</button>
+	</ion-input>
+</div>

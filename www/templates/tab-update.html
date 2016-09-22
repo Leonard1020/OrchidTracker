@@ -2,7 +2,7 @@
 	<ion-content>
 		<form name="plotForm">
 			<div class="card">
-				<div class="item item-divider"> 
+				<div class="item item-divider">
 					  Plot Number
 				</div>
 				<label class="item item-input">
@@ -10,7 +10,7 @@
 				</label>
 			</div>
 			<div class="card">
-				<div class="item item-divider"> 
+				<div class="item item-divider">
 					  Location: {{plot.location.latitude | number: 5}}, {{plot.location.longitude | number: 5}}
 				</div>
 				<label class="item-input">
@@ -23,7 +23,7 @@
 				</label>
 			</div>
 			<div class="card">
-				<div class="item item-divider"> 
+				<div class="item item-divider">
 					  Soil pH: {{plot.ph}}
 				</div>
 				<div class = "range">
@@ -31,7 +31,7 @@
 				</div>
 			</div>
 			<div class="card">
-				<div class="item item-divider"> 
+				<div class="item item-divider">
 					  Soil Moisture: {{plot.moisture}}%
 				</div>
 				<div class = "range">
@@ -39,7 +39,7 @@
 				</div>
 			</div>
 			<div class="card">
-				<div class="item item-divider"> 
+				<div class="item item-divider">
 					  Light: {{plot.light}}%
 				</div>
 				<div class = "range">
@@ -47,7 +47,7 @@
 				</div>
 			</div>
 			<div class="card">
-				<div class="item item-divider"> 
+				<div class="item item-divider">
 					  Soil Description
 				</div>
 				<label class="item item-input">
@@ -55,7 +55,7 @@
 				</label>
 			</div>
 			<div class="card">
-				<div class="item item-divider"> 
+				<div class="item item-divider">
 					  Additional Comments
 				</div>
 				<label class="item item-input">
@@ -63,7 +63,7 @@
 				</label>
 			</div>
 			<div style="text-align:center;">
-				<button class="button button-calm submitButton" type="submit" ng-click="updatePlot(plot)">Update</button>
+				<button class="button button-calm submitButton" type="submit" ng-disabled="authRequired" ng-click="updatePlot(plot)">Update</button>
 			</div>
 		</form>
 	</ion-content>

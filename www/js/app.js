@@ -47,7 +47,7 @@ angular.module('starter', ['ionic', 'firebase', 'ngMaterial', 'ionic.service.cor
 	})
 
 	// Each tab has its own nav history stack:
-	  
+
 	.state('tab.status', {
 		url: '/status',
 		cache: false,
@@ -58,7 +58,7 @@ angular.module('starter', ['ionic', 'firebase', 'ngMaterial', 'ionic.service.cor
 			}
 		}
 	})
-		
+
 	.state('tab.update', {
 		url: '/update',
 		cache: false,
@@ -69,7 +69,7 @@ angular.module('starter', ['ionic', 'firebase', 'ngMaterial', 'ionic.service.cor
 			}
 		}
 	})
-	  
+
 	.state('tab.graph', {
 		url: '/graph',
 		cache: false,
@@ -91,8 +91,7 @@ angular.module('starter', ['ionic', 'firebase', 'ngMaterial', 'ionic.service.cor
 			}
 		}
 	})
-	
+
 	// if none of the above states are matched, use this as the fallback
 	$urlRouterProvider.otherwise('/tab/status');
-
 });

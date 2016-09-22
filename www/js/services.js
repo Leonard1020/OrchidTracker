@@ -1,65 +1,45 @@
 angular.module('starter.services', [])
 
 .factory('AuthService', function($firebaseAuth, $firebaseObject, $firebaseArray, $state) {
-	return {/*
-		signupEmail: function(newEmail, newPassword, newFullName) {
-			authUser.$createUser({
-				email: newEmail,
-				password: newPassword,
-				fullName: newFullName
-			}).then(function(authData) {
-				ref.child("userProfile").child(authData.uid).set({
-					name: newFullName,
-					email: newEmail
-				});
-			}).catch(function(error) {
-				switch (error.code) {
-					case "EMAIL_TAKEN":
-						console.log("Someone's using that email");
-						break;
-					case "INVALID_EMAIL":
-						console.log("Not a valid email address");
-						break;
-					default:
-						console.log("Error creating user:", error);
-				}
-			});
+	return {
+		authRequired: function() {
+			return $firebaseAuth().$requireSignIn();
 		},
-		*/
+		logout: function() {
+			return $firebaseAuth().$signOut();
+		},
 		loginUser: function(email, password, success, failure) {
-			console.log(email);
 			$firebaseAuth().$signInWithEmailAndPassword(email, password).then(function(authData) {
 				success(authData);
 			}).catch(function(error) {
 				failure(error);
 			});
-			/*
-			authUser.$authWithPassword({ 
-				email: email,
-				password: password
-			}).then(function(authData) {
-				$state.go('tab');
+		},
+		createUser: function(email, password, success, failure) {
+			$firebaseAuth().$createUserWithEmailAndPassword(email, password).then(function(firebaseUser) {
+				success(firebaseUser);
 			}).catch(function(error) {
-				console.log(error);
+				failure(error);
 			});
-			*/
-		}/*,
-		resetPassword: function(resetEmail){
-			authUser.$resetPassword({
-				email: resetEmail
-			}).then(function(){
-				console.log('Password Reset Email was sent successfully');
-			}).catch(function(error){
-				console.log(error);
+		},
+		resetPassword: function(email, success, failure){
+			$firebaseAuth().$sendPasswordResetEmail(email).then(function(firebaseUser) {
+				success(firebaseUser);
+			}).catch(function(error) {
+				failure(error);
 			});
-		}*/
+		},
+		signInWithGoogle: function(success, failure) {
+			$firebaseAuth().$signInWithPopup("google").then(function(result) {
+				success(result);
+			}).catch(function(error) {
+				failure(error);
+			});
+		}
 	};
 })
 
-.factory('Plots', function($http, $firebaseArray, $firebaseObject) {
-	var serverURL = "https://orchid-tracker-server.herokuapp.com";
-	var dbURL = "https://plant-tracker-587e0.firebaseio.com";
-	
+.factory('Plots', function($http, $firebaseAuth, $firebaseArray, $firebaseObject) {
 	return {
 		all: function() {
 			var ref = firebase.database().ref().child('plots');
@@ -75,13 +55,11 @@ angular.module('starter.services', [])
 				return plot.plants;
 			});
 		},
-		add: function(plot, success, error) {
+		add: function(plot, callback) {
+			plot.createdBy = $firebaseAuth().$getAuth().email;
 			var ref = firebase.database().ref().child('plots').child(plot.number).set(plot);
 			$firebaseObject(ref).then(function(plot) {
-				success(plot);
-			}).catch(function(err) {
-				console.log('ere')
-				error(err);
+				callback(plot);
 			});
 		},
 		update: function(plot, success, error) {
@@ -91,10 +69,16 @@ angular.module('starter.services', [])
 				error(err);
 			});
 		},
-		putPlants: function(plants, id, success, error) {
-			return $http.put(serverURL + '/plots/' + id + '/plants', plants)
-							.success(success)
-							.error(error);
+		putPlants: function(plants, id, success, failure) {
+			var ref = firebase.database().ref().child('plots').child(id);
+			$firebaseObject(ref).$loaded().then(function(plot) {
+				plot.plants = plants;
+				plot.$save().then(function(plot) {
+					success(plot)
+				});
+			}).catch(function(error) {
+				failure(error);
+			});
 		}
 	};
 })

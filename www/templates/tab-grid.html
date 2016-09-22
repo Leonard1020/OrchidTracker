@@ -16,14 +16,16 @@
 			</select>
 			-->
 			<div>
-				<select class="borderless" name="quadrantSelect" id="quadrantSelect" 
+				<select class="borderless" name="quadrantSelect" id="quadrantSelect"
 					ng-options="option.name for option in scopes track by option.id"
 					ng-model="selectedScope"
 					ng-change="updatePlotScope(selectedScope)">
 				</select>
 			</div>
 		</div>
-		<div id="grid" style="min-width: 300px; margin: 0 auto"></div>
+		<div layout="row" layout-align="center center">
+			<div id="grid" style="min-width: 300px; margin: 0 auto"></div>
+		</div>
 	</div>
 	</ion-content>
 </ion-view>
