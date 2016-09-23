@@ -1,5 +1,5 @@
 <div class="card dialogCard">
-	<div class="item item-divider"> 
+	<div class="item item-divider">
           Plant ID
 	</div>
 	<label class="item">
@@ -7,7 +7,7 @@
 	</label>
 </div>
 <div class="card dialogCard">
-	<div class="item item-divider"> 
+	<div class="item item-divider">
           Started
 	</div>
 	<label class="item">
@@ -15,7 +15,7 @@
 	</label>
 </div>
 <div class="card dialogCard">
-	<div class="item item-divider"> 
+	<div class="item item-divider">
           Location: {{info.x | number: 2}}cm, {{info.y | number: 2}}cm
 	</div>
 	<label class="item-input">
@@ -31,12 +31,10 @@
 	<div class="item item-divider">
           Health
 	</div>
-	<label class="item">
-		{{healths[info.health - 1].health}}
-	</label>
+	<ion-radio ng-model="info.health" ng-repeat="item in healths" ng-value="item.value" name="health">{{item.health}}</ion-radio>
 </div>
 <div class="card dialogCard">
-	<div class="item item-divider"> 
+	<div class="item item-divider">
           Depth
 	</div>
 	<label class="item">
@@ -44,7 +42,7 @@
 	</label>
 </div>
 <div class="card dialogCard">
-	<div class="item item-divider"> 
+	<div class="item item-divider">
           Parentage
 	</div>
 	<label class="item">
@@ -52,15 +50,15 @@
 	</label>
 </div>
 <div class="card dialogCard">
-	<div class="item item-divider"> 
+	<div class="item item-divider">
           Number of Shoots
 	</div>
-	<label class="item">
-		{{info.shoots}}
+	<label class="item item-input">
+		<input type="number" placeholder="Number of Shoots" name="number" ng-model="info.shoots">
 	</label>
 </div>
 <div class="card dialogCard">
-	<div class="item item-divider"> 
+	<div class="item item-divider">
           Additional Comments
 	</div>
 	<label class="item">

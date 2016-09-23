@@ -1,6 +1,6 @@
 angular.module('starter.controllers', [])
 
-.controller('NavCtrl', function($scope, $ionicPopup, $ionicHistory, $state, AuthService, Plots) {
+.controller('NavCtrl', function($scope, $ionicPopup, $ionicHistory, $window, $state, AuthService, Plots) {
 	$scope.plotNumbers = [];
 	getPlotNumbers(Plots.all(), function(array) {
 		$scope.plotNumbers = array;
@@ -29,7 +29,7 @@ angular.module('starter.controllers', [])
 			if(res) {
 				AuthService.logout();
 				$scope.authRequired = true;
-				$state.reload();
+				$window.location.reload(true);
 			}
 		});
 	};
@@ -49,7 +49,7 @@ angular.module('starter.controllers', [])
 				AuthService.signInWithGoogle(function(response) {
 					$scope.authRequired = false;
 					loginDialog.close();
-					$state.reload();
+					$window.location.reload(true);
 				}, function(err) {
 					$scope.error = 'Error signing in with Google';
 				});
@@ -67,7 +67,7 @@ angular.module('starter.controllers', [])
 				AuthService.loginUser(email, password, function(authData) {
 					$scope.authRequired = false;
 					loginDialog.close();
-					$state.reload();
+					$window.location.reload(true);
 				}, function(err) {
 					$scope.error = 'Username and password are incorrect';
 					$('#circle').hide();
@@ -617,6 +617,42 @@ angular.module('starter.controllers', [])
 									scope: $scope,
 									buttons: [
 										{text: 'Cancel'},
+                    {
+                      text:'Update',
+                      type:'button-positive',
+                      onTap: function(e) {
+                        if ($scope.authRequired) {
+													var alertPopup = $ionicPopup.alert({
+														title: 'Not Signed In'
+													});
+													// alertPopup.then(function(res) {
+													// 	plantDialog.close();
+													// });
+													return;
+												}
+
+                        var update = {
+        									health: $scope.info.health,
+        									shoots: $scope.info.shoots,
+        									updated: new Date().toISOString()
+        								};
+
+                        var index = findPlantIndexById($scope.plants, $scope.info.id);
+                        $scope.plants[index].updates.push(update);
+
+                        Plots.putPlants($scope.plants, $scope.plotNumber, function(response) {
+                          var livingPlants = $scope.plants.filter(getLivingPlants);
+                          var goodPlants = livingPlants.filter(goodOrchids);
+                          var mediumPlants = livingPlants.filter(mediumOrchids);
+                          var badPlants = livingPlants.filter(poorOrchids);
+                          chart.series[0].setData(goodPlants, true);
+                          chart.series[1].setData(mediumPlants, true);
+                          chart.series[2].setData(badPlants, true);
+                        }, function(response) {
+                          console.log('Error: ' + response);
+                        });
+                      }
+                    },
 										{
 											text:'Remove',
 											type: 'button-assertive',
