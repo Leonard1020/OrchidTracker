@@ -1,3 +1,7 @@
+<div>
+<div layout="row" layout-align="center center">
+	<h2>Create User</h2>
+</div>
 <div layout="row" layout-align="center center">
 	<md-progress-circular hide id="createUserCircle" md-mode="indeterminate"></md-progress-circular>
 </div>
@@ -20,8 +24,9 @@
 		<input type="password" name="secondPassword" placeholder="Re-enter Password..." ng-model="secondPassword">
 	</ion-input>
 
-	<ion-input class="item-input padding">
+	<div layout="row" layout-align="center center">
 		<button class="button button-full" ng-click="cancel()">Cancel</button>
 		<button class="button button-full button-positive" ng-click="createUser(email, password, secondPassword)">Create User</button>
-	</ion-input>
+	</div>
+</div>
 </div>

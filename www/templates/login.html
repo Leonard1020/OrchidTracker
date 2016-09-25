@@ -1,34 +1,39 @@
-<div layout="row" layout-align="center center">
-	<md-progress-circular hide id="circle" md-mode="indeterminate"></md-progress-circular>
-</div>
-<div id="error-sub-title" style="text-align:center; color:red;">
-	{{error}}
-</div>
-<div class="list card no-margin">
-	<ion-input class="item item-input item-stacked-label" >
-		<ion-label >Email</ion-label>
-		<input type="email" name="email" placeholder="Your email..." ng-model="email">
-	</ion-input>
+<ion-view view-title="Login" class="centerMax">
+	<ion-content>
+		<div>
+			<div layout="row" layout-align="center center">
+				<md-progress-circular hide id="circle" md-mode="indeterminate"></md-progress-circular>
+			</div>
+			<div id="error-sub-title" style="text-align:center; color:red;">
+				{{error}}
+			</div>
+			<div class="list card no-margin">
+				<ion-input class="item item-input item-stacked-label" >
+					<ion-label >Email</ion-label>
+					<input type="email" name="email" placeholder="Your email..." ng-model="email">
+				</ion-input>
 
-	<ion-input class="item item-input item-stacked-label" >
-		<ion-label >Password</ion-label>
-		<input type="password" name="password" placeholder="Your Password..." ng-model="password">
-	</ion-input>
+				<ion-input class="item item-input item-stacked-label" >
+					<ion-label >Password</ion-label>
+					<input type="password" name="password" placeholder="Your Password..." ng-model="password">
+				</ion-input>
 
-	<ion-input class="item-input padding">
-		<button class="button button-full" ng-click="cancelLogin()">Cancel</button>
-		<button class="button button-full button-positive" ng-click="loginEmail(email, password)">Login</button>
-	</ion-input>
-</div>
+				<ion-input class="item-input padding">
+					<button class="button button-full button-positive" ng-click="loginEmail(email, password)">Login</button>
+				</ion-input>
+			</div>
 
-<div layout="row" layout-align="center center">
-	<img ng-click="signInWithGoogle()" src="img/btn_google_signin_light_normal_web.png" alt="Sign in with Google" style="width:50%;">
-</div>
+			<div layout="row" layout-align="center center">
+				<img ng-click="signInWithGoogle()" src="img/btn_google_signin_light_normal_web.png" alt="Sign in with Google" style="width:50%;">
+			</div>
 
-<a ng-click="openCreateUserDialog()" class="button button-royal button-clear button-block">
-	Or create an new User
-</a>
+			<a ng-click="openCreateUserDialog()" class="button button-royal button-clear button-block">
+				Or create an new User
+			</a>
 
-<a ng-click="openPassResetDialog()" class="button button-royal button-clear button-block button-small">
-	I forgot my password
-</a>
+			<a ng-click="openPassResetDialog()" class="button button-royal button-clear button-block button-small">
+				I forgot my password
+			</a>
+		</div>
+	</ion-content>
+</ion-view>

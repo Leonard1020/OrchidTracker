@@ -20,14 +20,18 @@ angular.module('starter', ['ionic', 'firebase', 'ngMaterial', 'ionic.service.cor
       // org.apache.cordova.statusbar required
       StatusBar.styleDefault();
     }
-	if (!localStorage.getItem('selectedPlot')) {
-		localStorage.setItem('selectedPlot', 1)
-	};
+  	if (!localStorage.getItem('selectedPlot')) {
+  		localStorage.setItem('selectedPlot', 1)
+  	};
   });
 })
 
 .config(function($ionicConfigProvider) {
     $ionicConfigProvider.tabs.position('bottom');
+})
+
+.config(function($mdGestureProvider) {
+  $mdGestureProvider.skipClickHijack();
 })
 
 .config(function($stateProvider, $urlRouterProvider) {
@@ -88,6 +92,17 @@ angular.module('starter', ['ionic', 'firebase', 'ngMaterial', 'ionic.service.cor
 			'tab-grid': {
 				templateUrl: 'templates/tab-grid.html',
 				controller: 'GridCtrl'
+			}
+		}
+	})
+
+  .state('tab.login', {
+		url: '/login',
+		cache: false,
+		views: {
+			'tab-login': {
+				templateUrl: 'templates/login.html',
+				controller: 'LoginCtrl'
 			}
 		}
 	})

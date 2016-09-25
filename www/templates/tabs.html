@@ -18,7 +18,7 @@ navigation history that also transitions its views in and out.
 				<button class="button button-clear icon ion-android-add" ng-show="!authRequired" ng-click="addPlot()"></button>
 			</ion-nav-buttons>
 			<ion-nav-buttons side="secondary">
-				<button class="button button-clear icon ion-log-in" ng-show="authRequired" ng-click="openLoginDialog()"></button>
+				<button class="button button-clear icon ion-log-in" ng-show="authRequired" ng-click="login()"></button>
 				<button class="button button-clear icon ion-log-out" ng-show="!authRequired" ng-click="logout()"></button>
 			</ion-nav-buttons>
 		</ion-nav-bar>
@@ -46,6 +46,10 @@ navigation history that also transitions its views in and out.
 				<ion-nav-view name="tab-graph"></ion-nav-view>
 			</ion-tab>
 
+			<!-- Login Tab -->
+			<ion-tab title="Login" hidden="true" href="#/tab/login">
+				<ion-nav-view name="tab-login"></ion-nav-view>
+			</ion-tab>
 
 		</ion-tabs>
 
