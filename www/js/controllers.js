@@ -617,90 +617,97 @@ angular.module('starter.controllers', [])
 									comment: this.comment
 								}
 
+
+								var removeButton = {
+										text:'Remove',
+										type: 'button-assertive',
+										onTap: function(e) {
+											if ($scope.authRequired) {
+												var alertPopup = $ionicPopup.alert({
+													title: 'Not Signed In'
+												});
+												// alertPopup.then(function(res) {
+												// 	plantDialog.close();
+												// });
+												return;
+											}
+
+											var confirmPopup = $ionicPopup.confirm({
+												title: 'Remove Plant ' + this.id,
+												template: 'Are you sure you want to remove this plant?'
+											});
+
+											confirmPopup.then(function(res) {
+												if(res) {
+													var index = findPlantIndexById($scope.plants, $scope.info.id);
+													$scope.plants[index].removed = new Date().toISOString();
+													var total = $scope.plants.filter(getLivingPlants).length;
+													chart.setTitle(null, {text: 'Orchid count: ' + total});
+
+													Plots.putPlants($scope.plants, $scope.plotNumber, function(response) {
+														var livingPlants = $scope.plants.filter(getLivingPlants);
+														var goodPlants = livingPlants.filter(goodOrchids);
+														var mediumPlants = livingPlants.filter(mediumOrchids);
+														var badPlants = livingPlants.filter(poorOrchids);
+														chart.series[0].setData(goodPlants, true);
+														chart.series[1].setData(mediumPlants, true);
+														chart.series[2].setData(badPlants, true);
+													}, function(response) {
+														console.log('Error: ' + response);
+													});
+												}
+											});
+										}
+								}
+
+								var updateButton = {
+									text:'Update',
+									type:'button-positive',
+									onTap: function(e) {
+										if ($scope.authRequired) {
+											var alertPopup = $ionicPopup.alert({
+												title: 'Not Signed In'
+											});
+											// alertPopup.then(function(res) {
+											// 	plantDialog.close();
+											// });
+											return;
+										}
+
+										var update = {
+											health: $scope.info.health,
+											shoots: $scope.info.shoots,
+											updated: new Date().toISOString()
+										};
+
+										var index = findPlantIndexById($scope.plants, $scope.info.id);
+										$scope.plants[index].updates.push(update);
+
+										Plots.putPlants($scope.plants, $scope.plotNumber, function(response) {
+											var livingPlants = $scope.plants.filter(getLivingPlants);
+											var goodPlants = livingPlants.filter(goodOrchids);
+											var mediumPlants = livingPlants.filter(mediumOrchids);
+											var badPlants = livingPlants.filter(poorOrchids);
+											chart.series[0].setData(goodPlants, true);
+											chart.series[1].setData(mediumPlants, true);
+											chart.series[2].setData(badPlants, true);
+										}, function(response) {
+											console.log('Error: ' + response);
+										});
+									}
+								}
+
+								var buttons = [ {text: 'Cancel'} ];
+								if (!$scope.authRequired) {
+									buttons.push(updateButton);
+									buttons.push(removeButton);
+								}
+								
 								$ionicPopup.show({
 									templateUrl: 'templates/plant-info-dialog.html',
 									title: '<h3>Plant ' + this.id + '</h3>',
 									scope: $scope,
-									buttons: [
-										{text: 'Cancel'},
-                    {
-                      text:'Update',
-                      type:'button-positive',
-                      onTap: function(e) {
-                        if ($scope.authRequired) {
-													var alertPopup = $ionicPopup.alert({
-														title: 'Not Signed In'
-													});
-													// alertPopup.then(function(res) {
-													// 	plantDialog.close();
-													// });
-													return;
-												}
-
-                        var update = {
-        									health: $scope.info.health,
-        									shoots: $scope.info.shoots,
-        									updated: new Date().toISOString()
-        								};
-
-                        var index = findPlantIndexById($scope.plants, $scope.info.id);
-                        $scope.plants[index].updates.push(update);
-
-                        Plots.putPlants($scope.plants, $scope.plotNumber, function(response) {
-                          var livingPlants = $scope.plants.filter(getLivingPlants);
-                          var goodPlants = livingPlants.filter(goodOrchids);
-                          var mediumPlants = livingPlants.filter(mediumOrchids);
-                          var badPlants = livingPlants.filter(poorOrchids);
-                          chart.series[0].setData(goodPlants, true);
-                          chart.series[1].setData(mediumPlants, true);
-                          chart.series[2].setData(badPlants, true);
-                        }, function(response) {
-                          console.log('Error: ' + response);
-                        });
-                      }
-                    },
-										{
-											text:'Remove',
-											type: 'button-assertive',
-											onTap: function(e) {
-												if ($scope.authRequired) {
-													var alertPopup = $ionicPopup.alert({
-														title: 'Not Signed In'
-													});
-													// alertPopup.then(function(res) {
-													// 	plantDialog.close();
-													// });
-													return;
-												}
-
-												var confirmPopup = $ionicPopup.confirm({
-													title: 'Remove Plant ' + this.id,
-													template: 'Are you sure you want to remove this plant?'
-												});
-
-												confirmPopup.then(function(res) {
-													if(res) {
-														var index = findPlantIndexById($scope.plants, $scope.info.id);
-														$scope.plants[index].removed = new Date().toISOString();
-														var total = $scope.plants.filter(getLivingPlants).length;
-														chart.setTitle(null, {text: 'Orchid count: ' + total});
-
-														Plots.putPlants($scope.plants, $scope.plotNumber, function(response) {
-															var livingPlants = $scope.plants.filter(getLivingPlants);
-															var goodPlants = livingPlants.filter(goodOrchids);
-															var mediumPlants = livingPlants.filter(mediumOrchids);
-															var badPlants = livingPlants.filter(poorOrchids);
-															chart.series[0].setData(goodPlants, true);
-															chart.series[1].setData(mediumPlants, true);
-															chart.series[2].setData(badPlants, true);
-														}, function(response) {
-															console.log('Error: ' + response);
-														});
-													}
-												});
-											}
-										}
-									]
+									buttons: buttons
 								});
 							}
 						}
