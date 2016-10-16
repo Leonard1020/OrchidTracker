@@ -15,11 +15,11 @@ navigation history that also transitions its views in and out.
 				<button class="button button-icon button-clear ion-navicon" menu-toggle="left"></button>
 			</ion-nav-buttons>
 			<ion-nav-buttons side="right">
-				<button class="button button-clear icon ion-android-add" ng-show="!authRequired" ng-click="addPlot()"></button>
+				<button class="button button-clear icon ion-android-add" id="addPlotButton" ng-show="!authRequired" ng-click="addPlot()"></button>
 			</ion-nav-buttons>
 			<ion-nav-buttons side="secondary">
-				<button class="button button-clear icon ion-log-in" ng-show="authRequired" ng-click="login()"></button>
-				<button class="button button-clear icon ion-log-out" ng-show="!authRequired" ng-click="logout()"></button>
+				<button class="button button-clear icon ion-log-in" id="loginButton" ng-show="authRequired" ng-click="login()"></button>
+				<button class="button button-clear icon ion-log-out" id="logoutButton" ng-show="!authRequired" ng-click="logout()"></button>
 			</ion-nav-buttons>
 		</ion-nav-bar>
 

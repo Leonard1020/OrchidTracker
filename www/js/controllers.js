@@ -7,7 +7,6 @@ angular.module('starter.controllers', [])
 	});
 
   $rootScope.$on('plotAdded', function(event, args) {
-    console.log('here');
     getPlotNumbers(Plots.all(), function(array) {
   		$scope.plotNumbers = array;
   	});
@@ -37,6 +36,9 @@ angular.module('starter.controllers', [])
     $mdDialog.show(confirm).then(function() {
       AuthService.logout();
       $scope.authRequired = true;
+			$("#addPlotButton").hide();
+			$("#loginButton").hide();
+			$("#logoutButton").hide();
       $window.location.reload(true);
     }, function() {
       //Do nothing;
@@ -49,6 +51,7 @@ angular.module('starter.controllers', [])
 
 	$scope.addPlot = function() {
 		var largestID = $scope.plotNumbers[$scope.plotNumbers.length - 1].number;
+		$scope.error = "";
 
 		$scope.plot = {
 			number: largestID + 1,
@@ -73,64 +76,67 @@ angular.module('starter.controllers', [])
 				console.log(err)
 			}, posOptions);
 
-    $mdDialog.show({
-      templateUrl: 'templates/add-plot-dialog.html',
-      controller: AddPlotController,
-      clickOutsideToClose:true,
-      locals: {
-        plotNumbers: $scope.plotNumbers,
-        plot: $scope.plot
-      }
-    });
-    function AddPlotController($scope, $mdDialog, plotNumbers, plot) {
-      $scope.plotNumbers = plotNumbers;
-      $scope.plot = plot;
-      $scope.cancel = function() {
-        $mdDialog.cancel();
-      }
-      $scope.createPlot = function() {
-        if ($scope.plotNumbers.find(function(index) { return index.number == $scope.plot.number; })) {
-          $scope.error = "Plot " + $scope.plot.number + " already exists";
-        } else if ($scope.plot.number < 1) {
-          $scope.error = "Invalid Plot Number";
-        } else if ($scope.plot.location.latitude < -90 || $scope.plot.location.latitude > 90) {
-          $scope.error = "Latitude must be between -90 and 90";
-        } else if ($scope.plot.location.longitude < -180 || $scope.plot.location.longitude > 180) {
-          $scope.error = "Longitude must be between -180 and 180";
-        } else {
-          var date = new Date().toISOString();
-          $scope.plot.started = date;
-          $scope.plot.updated = date;
+		$ionicPopup.show({
+			templateUrl: 'templates/add-plot-dialog.html',
+			title: '<h3>Add a Plot</h3>',
+			scope: $scope,
+			buttons: [
+				{ text: 'Cancel' },
+				{ text: 'Create',
+					type: 'button-positive',
+					onTap: function(e) {
+		        if ($scope.plotNumbers.find(function(index) { return index.number == $scope.plot.number; })) {
+		          $scope.error = "Plot " + $scope.plot.number + " already exists";
+							e.preventDefault();
+		        } else if ($scope.plot.number < 1) {
+		          $scope.error = "Invalid Plot Number";
+							e.preventDefault();
+						} else if ($scope.plot.location.latitude == '' || $scope.plot.location.longitude == '') {
+							$scope.error = "Please enter plot coordinates";
+							e.preventDefault();
+						} else if ($scope.plot.location.latitude < -90 || $scope.plot.location.latitude > 90) {
+		          $scope.error = "Latitude must be between -90 and 90";
+							e.preventDefault();
+		        } else if ($scope.plot.location.longitude < -180 || $scope.plot.location.longitude > 180) {
+		          $scope.error = "Longitude must be between -180 and 180";
+							e.preventDefault();
+		        } else {
+		          var date = new Date().toISOString();
+		          $scope.plot.started = date;
+		          $scope.plot.updated = date;
+		          $rootScope.$emit('plotAdded', {});
 
-          $rootScope.$emit('plotAdded', {});
-
-          try {
-            Plots.add($scope.plot, function(response) {
-              localStorage.setItem('selectedPlot', $scope.plot.number)
-              $state.go('tab.status', null, {reload: true});
-              $mdDialog.cancel();
-            }).error(function(err) {
-              $scope.error = err.message;
-            });
-          } catch (err) {
-            if (err.code == 'PERMISSION_DENIED') {
-              $scope.error = "Permission Denied";
-            } else if (err.message.indexOf("'key'") > -1) {
-              localStorage.setItem('selectedPlot', $scope.plot.number)
-              getPlotNumbers(Plots.all(), function(array) {
-                  $scope.plotNumbers = array;
-              });
-              $state.go('tab.status', null, {reload: true});
-              $mdDialog.cancel();
-            }
-          }
-        }
-      }
-    }
+		          try {
+		            Plots.add($scope.plot, function(response) {
+									$scope.error = "";
+		              localStorage.setItem('selectedPlot', $scope.plot.number)
+		              $state.go('tab.status', null, {reload: true});
+		            }).error(function(err) {
+		              $scope.error = err.message;
+									e.preventDefault();
+		            });
+		          } catch (err) {
+		            if (err.code == 'PERMISSION_DENIED') {
+		              $scope.error = "Permission Denied";
+									e.preventDefault();
+		            } else if (err.message.indexOf("'key'") > -1) {
+									$scope.error = "";
+		              localStorage.setItem('selectedPlot', $scope.plot.number)
+		              getPlotNumbers(Plots.all(), function(array) {
+		                  $scope.plotNumbers = array;
+		              });
+		              $state.go('tab.status', null, {reload: true});
+		            }
+		          }
+		        }
+		      }
+				}
+			]
+		});
 	};
 })
 
-.controller('LoginCtrl', function($scope, $mdDialog, $window, $state, AuthService) {
+.controller('LoginCtrl', function($scope, $mdDialog, $ionicPopup, $window, $state, AuthService) {
   $scope.error = '';
   $scope.loginEmail = function(email, password) {
   	if (!email || !password) {
@@ -158,6 +164,7 @@ angular.module('starter.controllers', [])
         $state.go('tab.status', null, {reload: true});
         $window.location.reload(true);
   		}, function(err) {
+				console.log(err);
   			$scope.error = 'Error signing in with Google';
   		});
   	} catch (err) {
@@ -167,67 +174,91 @@ angular.module('starter.controllers', [])
 
   $scope.openPassResetDialog = function() {
     $scope.error = '';
-    $mdDialog.show({
-      controller: resetPasswordController,
-      templateUrl: 'templates/resetPassword.html',
-      clickOutsideToClose:true
-    });
-    function resetPasswordController($scope, $mdDialog) {
-      $scope.cancel = function() {
-        $scope.error = "";
-        $mdDialog.cancel();
-      };
-      $scope.resetPassword = function(email) {
-        if (!email) {
-          $scope.error = "Enter a valid email";
-        }
-        AuthService.resetPassword(email, function(user) {
-          $scope.error = "";
-          $mdDialog.cancel();
-        }, function(error) {
-          $scope.error = error.message;
-        });
-      };
-    }
+		$scope.data = {
+			email: ''
+		};
+		$ionicPopup.show({
+			templateUrl: 'templates/resetPassword.html',
+			title: '<h3>Reset Password</h3>',
+			scope: $scope,
+			buttons: [
+				{ text: 'Cancel',
+			 		onTap: function(e) {
+						$scope.error = '';
+						$scope.data.email = '';
+					}
+				},
+				{ text: 'Send',
+					type: 'button-positive',
+					onTap: function(e) {
+						if (!$scope.data.email || $scope.data.email == '') {
+		          $scope.error = "Enter a valid email";
+							e.preventDefault();
+		        }
+		        AuthService.resetPassword($scope.data.email, function(user) {
+		          $scope.error = "";
+		        }, function(error) {
+		          $scope.error = error.message;
+							e.preventDefault();
+		        });
+					}
+				}
+			]
+		});
   };
 
   $scope.openCreateUserDialog = function() {
-    $scope.error = '';
-    $mdDialog.show({
-      controller: createUserController,
-      templateUrl: 'templates/createUser.html',
-      clickOutsideToClose:true
-    });
-    function createUserController($scope, $mdDialog) {
-      $scope.cancel = function() {
-        $scope.error = "";
-        $mdDialog.cancel();
-      };
-      $scope.createUser = function(email, password, secondPassword) {
-        if (!email) {
-          $scope.error = "Enter a valid email";
-        }
-        if (!password) {
-          $scope.error = "Enter a password";
-          return;
-        }
-        if (password != secondPassword) {
-          $scope.error = "Passwords do not match";
-          return;
-        }
-        $('#createUserCircle').show();
-        AuthService.createUser(email, password, function(user) {
-          $('#createUserCircle').hide();
-          $scope.error = "";
-          $mdDialog.cancel();
-          $state.go('tab.status', null, {reload: true});
-          $window.location.reload(true);
-        }, function(error) {
-          $scope.error = error.message;
-          $('#createUserCircle').hide();
-        });
-      };
-    }
+		$scope.error = '';
+		$scope.newUser = {
+			email: '',
+			password: '',
+			secondPassword: ''
+		};
+		var createUserPopup = $ionicPopup.show({
+			templateUrl: 'templates/createUser.html',
+			title: '<h3>Create User</h3>',
+			scope: $scope,
+			buttons: [
+				{ text: 'Cancel',
+			 		onTap: function(e) {
+						$scope.error = '';
+					}
+				},
+				{ text: 'Create',
+					type: 'button-positive',
+					onTap: function(e) {
+						if (!$scope.newUser.email || $scope.newUser.email == '' || $scope.newUser.email == undefined) {
+		          $scope.error = "Enter a valid email";
+							e.preventDefault();
+							return;
+		        }
+						if (!$scope.newUser.password || $scope.newUser.password == '') {
+		          $scope.error = "Enter a password";
+		          e.preventDefault();
+							return;
+		        }
+		        if ($scope.newUser.password != $scope.newUser.secondPassword) {
+		          $scope.error = "Passwords do not match";
+		          e.preventDefault();
+							return;
+		        }
+
+						$('#createUserCircle').show();
+		        AuthService.createUser($scope.newUser.email, $scope.newUser.password, function(user) {
+		          $('#createUserCircle').hide();
+		          $scope.error = "";
+		          $state.go('tab.status', null, {reload: true});
+		          $window.location.reload(true);
+							createUserPopup.close();
+		        }, function(error) {
+							$('#createUserCircle').hide();
+		          $scope.error = error.message;
+		        });
+						e.preventDefault();
+					}
+				}
+			]
+		});
   };
 })
 
@@ -435,6 +466,7 @@ angular.module('starter.controllers', [])
 	var chart;
 
 	$scope.addPlant = function(callback) {
+		$scope.error = "";
 		$ionicPopup.show({
 			templateUrl: 'templates/add-plant-dialog.html',
 			title: '<h3>Add a Plant</h3>',
@@ -518,6 +550,7 @@ angular.module('starter.controllers', [])
 						}
 						$scope.plant.id = largestID + 1;
 
+						$scope.error = "";
 						$scope.addPlant(function() {
 							var livingPlants = $scope.plants.filter(getLivingPlants);
 							var goodPlants = livingPlants.filter(goodOrchids);
@@ -617,7 +650,6 @@ angular.module('starter.controllers', [])
 									comment: this.comment
 								}
 
-
 								var removeButton = {
 										text:'Remove',
 										type: 'button-assertive',
@@ -702,7 +734,7 @@ angular.module('starter.controllers', [])
 									buttons.push(updateButton);
 									buttons.push(removeButton);
 								}
-								
+
 								$ionicPopup.show({
 									templateUrl: 'templates/plant-info-dialog.html',
 									title: '<h3>Plant ' + this.id + '</h3>',
