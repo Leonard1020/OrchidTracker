@@ -164,7 +164,6 @@ angular.module('starter.controllers', [])
         $state.go('tab.status', null, {reload: true});
         $window.location.reload(true);
   		}, function(err) {
-				console.log(err);
   			$scope.error = 'Error signing in with Google';
   		});
   	} catch (err) {
