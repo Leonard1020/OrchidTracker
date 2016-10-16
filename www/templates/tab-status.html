@@ -1,26 +1,45 @@
 <ion-view view-title="Status" class="centerMax">
   <ion-content class="padding">
     <h2>Plot #{{plot.number}}</h2>
-	<div class="card">
-		<div class="item item-text-wrap">
-			Location: {{plot.location.latitude}}, {{plot.location.longitude}}<br>
-			Last Updated: {{plot.updated}}<br>
-			Plot Started: {{plot.started}}<br>
-			Picture?
-		</div>
-	</div>
-	<div class="card">
-		<div class="item item-text-wrap">
-			Soil pH: {{plot.ph}}<br>
-			Soil Moisture: {{plot.moisture}}%<br>
-			Light: {{plot.light}}%
-		</div>
-	</div>
-	<div class="card">
-		<div class="item item-text-wrap">
-			<div>Plant Count: {{plantCount}}</div>
-			<div>Growth/Decay Rate: N.A.</div>
-		</div>
-	</div>
+  	<div class="card">
+      <div class="item item-divider">
+          Location and Time
+      </div>
+  		<div class="item item-text-wrap">
+  			Location: {{plot.location.latitude}}, {{plot.location.longitude}}<br>
+  			Last Updated: {{plot.updated}}<br>
+  			Plot Started: {{plot.started}}
+  		</div>
+  	</div>
+  	<div class="card">
+      <!--
+      <div layout="row" layout-align="start center" class="item item-divider" ng-style="{ 'padding-top': padding.top, 'padding-bottom': padding.bottom }">
+          <span flex>Plot Summary</span>
+          <i flex="10" class="button button-icon icon ion-camera" ng-show="!authRequired" ng-click="takePicture()"></i>
+      </div>
+      -->
+      <div layout="row" layout-align="start center" class="item item-divider">
+          Plot Summary
+      </div>
+      <div layout="row" class="item item-text-wrap">
+        <div flex="33">
+    			Soil pH: {{plot.ph}}<br>
+    			Soil Moisture: {{plot.moisture}}%<br>
+    			Light: {{plot.light}}%
+    		</div>
+        <div flex>
+          <!-- Picture -->
+        </div>
+      </div>
+  	</div>
+  	<div class="card">
+      <div class="item item-divider">
+          Plant Summary
+      </div>
+  		<div class="item item-text-wrap">
+  			<div>Plant Count: {{plantCount}}</div>
+  			<div>Growth/Decay Rate: N.A.</div>
+  		</div>
+  	</div>
   </ion-content>
 </ion-view>
