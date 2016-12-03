@@ -5,6 +5,9 @@ angular.module('starter.services', [])
 		authRequired: function() {
 			return $firebaseAuth().$requireSignIn();
 		},
+		getUser: function() {
+			return $firebaseAuth().$getAuth().email;
+		},
 		logout: function() {
 			return $firebaseAuth().$signOut();
 		},
@@ -70,6 +73,7 @@ angular.module('starter.services', [])
 			});
 		},
 		putPlants: function(plants, id, success, failure) {
+			console.log(plants);
 			var ref = firebase.database().ref().child('plots').child(id);
 			$firebaseObject(ref).$loaded().then(function(plot) {
 				plot.plants = plants;

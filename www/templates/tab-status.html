@@ -7,8 +7,8 @@
       </div>
   		<div class="item item-text-wrap">
   			Location: {{plot.location.latitude}}, {{plot.location.longitude}}<br>
-  			Last Updated: {{plot.updated}}<br>
-  			Plot Started: {{plot.started}}
+  			Last Updated: {{plot.updated | date:"mediumDate"}}<br>
+  			Plot Started: {{plot.started | date:"mediumDate"}}
   		</div>
   	</div>
   	<div class="card">
@@ -37,7 +37,7 @@
           Plant Summary
       </div>
   		<div class="item item-text-wrap">
-  			<div>Plant Count: {{plantCount}}</div>
+  			<div>Plant Count: {{plantCount}}/{{plot.plants.length}}</div>
   			<div>Growth/Decay Rate: N.A.</div>
   		</div>
   	</div>

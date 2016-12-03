@@ -277,7 +277,7 @@ angular.module('starter.controllers', [])
 		if (!plot.plants) {
 			$scope.plot.plants = [];
 		}
-		$scope.plantCount = plot.plants.filter(getLivingPlants).length;
+		$scope.plantCount = plot.plants.filter(getPresentPlants).length;
 	});
 
 	$scope.takePicture = function() {
@@ -319,170 +319,18 @@ angular.module('starter.controllers', [])
 	};
 })
 
-.controller('GraphCtrl', function($scope, $state, $window, $ionicHistory, Plots) {
-	$scope.graphs = ['Number of Plants', 'Current Plot Health', 'Yearly Plot Health'];
-
-	if ($scope.graphs.indexOf(localStorage.getItem('selectedGraph')) < 0) {
-		localStorage.setItem('selectedGraph', $scope.graphs[0]);
-	};
-
-	$scope.selectedGraph = localStorage.getItem('selectedGraph');
-
-	Plots.getPlants(localStorage.getItem('selectedPlot')).then(function(plants) {
-		$scope.plants = plants ? plants : [];
-		$scope.years = getYears($scope.plants);
-		createGraph();
-	});
-
-	$scope.loadGraph = function(selectedGraph) {
-		localStorage.setItem('selectedGraph', selectedGraph);
-		$state.go($state.current, {}, {reload: true});
-		//$state.reload();
-	}
-
-	function createGraph() {
-		if ($scope.selectedGraph == 'Number of Plants') {
-			$('#graph').highcharts({
-				chart: {
-					type: 'column'
-				},
-				title: {
-					text: 'Number of Plants'
-				},
-				xAxis: {
-					categories: $scope.years,
-					crosshair: true
-				},
-				yAxis: {
-					title: {
-						text: 'Number of Plants'
-					},
-					min: 0
-				},
-				legend: {
-					enabled: false
-				},
-				plotOptions: {
-					column: {
-						pointPadding: 0.2,
-						borderWidth: 0
-					}
-				},
-				series: [{
-					name: 'Count',
-					data: getPlantCountPerYear($scope.plants)
-				}]
-			});
-		} else if ($scope.selectedGraph == 'Current Plot Health') {
-			$('#graph').highcharts({
-				chart: {
-					plotBackgroundColor: null,
-					plotBorderWidth: null,
-					plotShadow: false,
-					type: 'pie'
-				},
-				title: {
-					text: 'Current Plot Health'
-				},
-				series: [{
-					name: 'Count',
-					colorByPoint: true,
-					data: [{
-						name: 'Healthy',
-						color: 'rgba(34,139,34, .5)',
-						y: $scope.plants.filter(getLivingPlants).filter(goodOrchids).length
-					}, {
-						name: 'Medium',
-						color: 'rgba(229,217,0, .8)',
-						y: $scope.plants.filter(getLivingPlants).filter(mediumOrchids).length
-					}, {
-						name: 'Poor',
-						color: 'rgba(255,0,0, .5)',
-						y: $scope.plants.filter(getLivingPlants).filter(poorOrchids).length
-					}]
-				}]
-			});
-		} else if ($scope.selectedGraph == 'Yearly Plot Health') {
-			$('#graph').highcharts({
-				chart: {
-					type: 'column'
-				},
-				title: {
-					text: 'Plot Health Breakdown'
-				},
-				xAxis: {
-					categories: $scope.years,
-					crosshair: true
-				},
-				yAxis: {
-					title: {
-						text: 'Number of Plants'
-					},
-					min: 0,
-					stackLabels: {
-						enabled: true,
-						style: {
-							fontWeight: 'bold',
-							color: (Highcharts.theme && Highcharts.theme.textColor) || 'gray'
-						}
-					}
-				},
-				legend: {
-					align: 'right',
-					x: -30,
-					verticalAlign: 'top',
-					y: 25,
-					floating: true,
-					backgroundColor: (Highcharts.theme && Highcharts.theme.background2) || 'white',
-					borderColor: '#CCC',
-					borderWidth: 1,
-					shadow: false
-				},
-				tooltip: {
-					headerFormat: '<b>{point.x}</b><br/>',
-					pointFormat: '{series.name}: {point.y}<br/>Total: {point.stackTotal}'
-				},
-				plotOptions: {
-					column: {
-						stacking: 'normal',
-						dataLabels: {
-							enabled: true,
-							color: (Highcharts.theme && Highcharts.theme.dataLabelsColor) || 'white',
-							style: {
-								textShadow: '0 0 3px black'
-							}
-						}
-					}
-				},
-				series: [{
-					name: 'Healthy',
-					color: 'rgba(34,139,34, .5)',
-					data: getPlantCountPerYear($scope.plants, 3)
-				}, {
-					name: 'Medium',
-					color: 'rgba(229,217,0, .8)',
-					data: getPlantCountPerYear($scope.plants, 2)
-				}, {
-					name: 'Poor',
-					color: 'rgba(255,0,0, .5)',
-					data: getPlantCountPerYear($scope.plants, 1)
-				}]
-			});
-		}
-	};
-})
-
 .controller('GridCtrl', function($scope, $ionicPopup, AuthService, Plots) {
 	$scope.plotNumber = localStorage.getItem('selectedPlot');
 	$scope.depths = ["Deep", "Shallow"];
+	$scope.prep = ["Yes", "No"];
 	$scope.healths = [{health: "Bad", value: 1}, {health: "Medium", value: 2}, {health: "Good", value: 3}];
 	$scope.parents = ["A", "B", "C", "D", "E", "F"];
 	$scope.scopes = [
 		{id: 0, name: 'Whole Plot'},
-		{id: 1, name: 'Quadrant 1'},
-		{id: 2, name: 'Quadrant 2'},
-		{id: 3, name: 'Quadrant 3'},
-		{id: 4, name: 'Quadrant 4'}
+		{id: 2, name: 'Quadrant A'},
+		{id: 1, name: 'Quadrant B'},
+		{id: 3, name: 'Quadrant C'},
+		{id: 4, name: 'Quadrant D'}
 	];
 	$scope.selectedScope = $scope.scopes[0];
 
@@ -512,21 +360,29 @@ angular.module('starter.controllers', [])
 						} else if ($scope.plant.id < 1) {
 							$scope.error = "Invalid Plant Id";
 							e.preventDefault();
-						} else if ($scope.plant.x < 0 || $scope.plant.x > 200 ||
-									$scope.plant.y < 0 || $scope.plant.y > 200) {
-							$scope.error = "Location must be between 0 and 200";
+						} else if ($scope.plant.x < -100 || $scope.plant.x > 100 ||
+									$scope.plant.y < -100 || $scope.plant.y > 100) {
+							$scope.error = "Location must be between -100 and 100";
 							e.preventDefault();
 						} else if ($scope.plant.updates[0].shoots < 0) {
 							$scope.error = "Number of shoots cannot be negative";
 							e.preventDefault();
+						} else if ($scope.plant.updates[0].leaves < 0) {
+							$scope.error = "Number of leaves cannot be negative";
+							e.preventDefault();
+						} else if ($scope.plant.updates[0].lowestLeafWidth < 0 || $scope.plant.updates[0].lowestLeafLength < 0) {
+							$scope.error = "Leaf dimensions cannot be negative";
+							e.preventDefault();
+						} else if ($scope.plant.updates[0].leaves < 1 && ($scope.plant.updates[0].lowestLeafWidth || $scope.plant.updates[0].lowestLeafLength)) {
+							$scope.error = "Leaf dimensions cannot exist if there are no leaves";
+							e.preventDefault();
 						} else {
 							$scope.error = "";
 							var startingDate = new Date().toISOString();
-							$scope.plant.started = startingDate;
 							$scope.plant.updates[0].updated = startingDate;
 							$scope.plants.push($scope.plant);
-							var total = $scope.plants.filter(getLivingPlants).length;
-							chart.setTitle(null, {text: 'Orchid count: ' + total});
+							var total = $scope.plants.filter(getPresentPlants).length;
+							chart.setTitle(null, {text: 'Plant count: ' + total + "/" + $scope.plants.length});
 
 							Plots.putPlants($scope.plants, $scope.plotNumber, function(response) {
 								callback();
@@ -546,6 +402,29 @@ angular.module('starter.controllers', [])
 		$scope.startYear = $scope.startYears[$scope.startYears.length - 1];
 		$scope.endYear = $scope.endYears[$scope.endYears.length - 1];
 
+		var axis = {
+			title: {
+				text: ''
+			},
+			labels: {
+				enabled: false
+			},
+			min: -100,
+			max: 100,
+			gridLineWidth: 0,
+			minorTickInterval: 25,
+			startOnTick: true,
+			endOnTick: true,
+			showLastLabel: true,
+			plotLines: [{
+				color: '#C0C0C0',
+				dashStyle: 'solid',
+				width: 2,
+				value: 0,
+				zIndex: 3
+			}]
+		}
+
 		var grid = $('#grid');
 		grid.highcharts({
 			chart: {
@@ -561,13 +440,20 @@ angular.module('starter.controllers', [])
 						$scope.plant = {
 							x: e.xAxis[0].value,
 							y: e.yAxis[0].value,
-							depth: "Deep",
-							parent: "A",
-							comment: "",
+							depth: "",
+							parent: "",
+							surfacePrep: "",
 							updates: [
 								{
 									health: 1,
-									shoots: 0
+									height: 0,
+									shoots: 0,
+									leaves: 0,
+									lowestLeafWidth: 0,
+									lowestLeafLength: 0,
+									present: "Yes",
+									comment: "",
+									observer: AuthService.getUser()
 								}
 							]
 						};
@@ -581,13 +467,15 @@ angular.module('starter.controllers', [])
 
 						$scope.error = "";
 						$scope.addPlant(function() {
-							var livingPlants = $scope.plants.filter(getLivingPlants);
-							var goodPlants = livingPlants.filter(goodOrchids);
-							var mediumPlants = livingPlants.filter(mediumOrchids);
-							var badPlants = livingPlants.filter(poorOrchids);
+							var livingPlants = $scope.plants.filter(getPresentPlants);
+							var goodPlants = livingPlants.filter(getGoodPlants);
+							var mediumPlants = livingPlants.filter(getMediumPlants);
+							var badPlants = livingPlants.filter(getPoorPlants);
+							var missingPlants = $scope.plants.filter(getNonPresentPlants);
 							chart.series[0].setData(goodPlants, true);
 							chart.series[1].setData(mediumPlants, true);
 							chart.series[2].setData(badPlants, true);
+							chart.series[3].setData(missingPlants, true);
 						});
 					}
 				}
@@ -596,53 +484,10 @@ angular.module('starter.controllers', [])
 				text: null
 			},
 			subtitle: {
-				text: 'Orchid count: ' + $scope.plants.filter(getLivingPlants).length
+				text: 'Plant count: ' + $scope.plants.filter(getPresentPlants).length + "/" + $scope.plants.length
 			},
-			xAxis: {
-				title: {
-					enabled: true,
-					text: ''
-				},
-				labels: {
-					enabled: true
-				},
-				min: 0,
-				max: 200,
-				gridLineWidth: 0,
-				minorTickInterval: 25,
-				startOnTick: true,
-				endOnTick: true,
-				showLastLabel: true,
-				plotLines: [{
-					color: '#C0C0C0',
-					dashStyle: 'solid',
-					width: 2,
-					value: 100,
-					zIndex: 3
-				}]
-			},
-			yAxis: {
-				title: {
-					text: ''
-				},
-				labels: {
-					enabled: false
-				},
-				min: 0,
-				max: 200,
-				gridLineWidth: 0,
-				minorTickInterval: 25,
-				startOnTick: true,
-				endOnTick: true,
-				showLastLabel: true,
-				plotLines: [{
-					color: '#C0C0C0',
-					dashStyle: 'solid',
-					width: 2,
-					value: 100,
-					zIndex: 3
-				}]
-			},
+			xAxis: axis,
+			yAxis: axis,
 			legend: {
 				enabled: false
 			},
@@ -669,56 +514,12 @@ angular.module('starter.controllers', [])
 							'click': function () {
 								$scope.info = {
 									id: this.id,
-									started: this.started,
 									x: this.x,
 									y: this.y,
 									depth: this.depth,
+									surfacePrep: this.surfacePrep,
 									parentage: this.parent,
-									health: this.updates[this.updates.length - 1].health,
-									shoots: this.updates[this.updates.length - 1].shoots,
-									comment: this.comment
-								}
-
-								var removeButton = {
-										text:'Remove',
-										type: 'button-assertive',
-										onTap: function(e) {
-											if ($scope.authRequired) {
-												var alertPopup = $ionicPopup.alert({
-													title: 'Not Signed In'
-												});
-												// alertPopup.then(function(res) {
-												// 	plantDialog.close();
-												// });
-												return;
-											}
-
-											var confirmPopup = $ionicPopup.confirm({
-												title: 'Remove Plant ' + this.id,
-												template: 'Are you sure you want to remove this plant?'
-											});
-
-											confirmPopup.then(function(res) {
-												if(res) {
-													var index = findPlantIndexById($scope.plants, $scope.info.id);
-													$scope.plants[index].removed = new Date().toISOString();
-													var total = $scope.plants.filter(getLivingPlants).length;
-													chart.setTitle(null, {text: 'Orchid count: ' + total});
-
-													Plots.putPlants($scope.plants, $scope.plotNumber, function(response) {
-														var livingPlants = $scope.plants.filter(getLivingPlants);
-														var goodPlants = livingPlants.filter(goodOrchids);
-														var mediumPlants = livingPlants.filter(mediumOrchids);
-														var badPlants = livingPlants.filter(poorOrchids);
-														chart.series[0].setData(goodPlants, true);
-														chart.series[1].setData(mediumPlants, true);
-														chart.series[2].setData(badPlants, true);
-													}, function(response) {
-														console.log('Error: ' + response);
-													});
-												}
-											});
-										}
+									updates: this.updates
 								}
 
 								var updateButton = {
@@ -729,29 +530,40 @@ angular.module('starter.controllers', [])
 											var alertPopup = $ionicPopup.alert({
 												title: 'Not Signed In'
 											});
-											// alertPopup.then(function(res) {
-											// 	plantDialog.close();
-											// });
 											return;
 										}
 
+										var binding = $scope.info.updates[$scope.info.updates.length - 1];
 										var update = {
-											health: $scope.info.health,
-											shoots: $scope.info.shoots,
-											updated: new Date().toISOString()
+											present: binding.present,
+											comment: binding.comment,
+											updated: new Date().toISOString(),
+											observer: AuthService.getUser()
 										};
+										if (update.present === "Yes") {
+											update.health = binding.health != null ? binding.health : 1;
+											update.height = binding.height != null ? binding.height : "";
+											update.shoots = binding.shoots != null ? binding.shoots : "";
+											update.leaves = binding.leaves != null ? binding.leaves : "";
+											update.lowestLeafWidth = binding.lowestLeafWidth != null ? binding.lowestLeafWidth : "";
+											update.lowestLeafLength = binding.lowestLeafLength != null ? binding.lowestLeafLength : "";
+										}
 
 										var index = findPlantIndexById($scope.plants, $scope.info.id);
 										$scope.plants[index].updates.push(update);
+										var total = $scope.plants.filter(getPresentPlants).length;
+										chart.setTitle(null, {text: 'Plant count: ' + total + "/" + $scope.plants.length});
 
 										Plots.putPlants($scope.plants, $scope.plotNumber, function(response) {
-											var livingPlants = $scope.plants.filter(getLivingPlants);
-											var goodPlants = livingPlants.filter(goodOrchids);
-											var mediumPlants = livingPlants.filter(mediumOrchids);
-											var badPlants = livingPlants.filter(poorOrchids);
+											var livingPlants = $scope.plants.filter(getPresentPlants);
+											var goodPlants = livingPlants.filter(getGoodPlants);
+											var mediumPlants = livingPlants.filter(getMediumPlants);
+											var badPlants = livingPlants.filter(getPoorPlants);
+											var missingPlants = $scope.plants.filter(getNonPresentPlants);
 											chart.series[0].setData(goodPlants, true);
 											chart.series[1].setData(mediumPlants, true);
 											chart.series[2].setData(badPlants, true);
+											chart.series[3].setData(missingPlants, true);
 										}, function(response) {
 											console.log('Error: ' + response);
 										});
@@ -761,7 +573,6 @@ angular.module('starter.controllers', [])
 								var buttons = [ {text: 'Cancel'} ];
 								if (!$scope.authRequired) {
 									buttons.push(updateButton);
-									buttons.push(removeButton);
 								}
 
 								$ionicPopup.show({
@@ -782,23 +593,30 @@ angular.module('starter.controllers', [])
 			series: [{
 				name: 'Healthy Plant',
 				color: 'rgba(34,139,34, .5)',
-				data: $scope.plants.filter(getLivingPlants).filter(goodOrchids),
+				data: $scope.plants.filter(getPresentPlants).filter(getGoodPlants),
 				marker: {
 					"symbol": "circle"
 				}
 			}, {
 				name: 'Medium Plant',
 				color: 'rgba(229,217,0, .8)',
-				data: $scope.plants.filter(getLivingPlants).filter(mediumOrchids),
+				data: $scope.plants.filter(getPresentPlants).filter(getMediumPlants),
 				marker: {
 					"symbol": "circle"
 				}
 			}, {
 				name: 'Poor Plant',
 				color: 'rgba(255,0,0, .5)',
-				data: $scope.plants.filter(getLivingPlants).filter(poorOrchids),
+				data: $scope.plants.filter(getPresentPlants).filter(getPoorPlants),
 				marker: {
 					"symbol": "circle"
+				}
+			}, {
+				name: 'Not Present',
+				color: 'rgba(100,100,100, .5)',
+				data: $scope.plants.filter(getNonPresentPlants),
+				marker: {
+					"symbol": "diamond"
 				}
 			}]
 		});
@@ -808,41 +626,42 @@ angular.module('starter.controllers', [])
 
 	$scope.updatePlotScope = function(item) {
 		if (item.id == 0) {
-			chart.xAxis[0].setExtremes(0,200);
-			chart.yAxis[0].setExtremes(0,200);
-			//chart.yAxis[0].update({
-			//	labels: { enabled: false }
-			//});
+			chart.xAxis[0].setExtremes(-100,100);
+			chart.yAxis[0].setExtremes(-100,100);
 		} else if (item.id == 1) {
-			chart.xAxis[0].setExtremes(100,200);
-			chart.yAxis[0].setExtremes(100,200);
+			chart.xAxis[0].setExtremes(0,100);
+			chart.yAxis[0].setExtremes(0,100);
 		} else if (item.id == 2) {
-			chart.xAxis[0].setExtremes(0,100);
-			chart.yAxis[0].setExtremes(100,200);
+			chart.xAxis[0].setExtremes(-100,0);
+			chart.yAxis[0].setExtremes(0,100);
 		} else if (item.id == 3) {
-			chart.xAxis[0].setExtremes(0,100);
-			chart.yAxis[0].setExtremes(0,100);
+			chart.xAxis[0].setExtremes(-100,0);
+			chart.yAxis[0].setExtremes(-100,0);
 		} else if (item.id == 4) {
-			chart.xAxis[0].setExtremes(100,200);
-			chart.yAxis[0].setExtremes(0,100);
+			chart.xAxis[0].setExtremes(0,100);
+			chart.yAxis[0].setExtremes(-100,0);
 		}
 	}
 });
 
-function goodOrchids(orchid) {
-	return orchid.updates[orchid.updates.length - 1].health == 3;
+function getGoodPlants(plant) {
+	return plant.updates[plant.updates.length - 1].health == 3;
 };
 
-function mediumOrchids(orchid) {
-	return orchid.updates[orchid.updates.length - 1].health == 2;
+function getMediumPlants(plant) {
+	return plant.updates[plant.updates.length - 1].health == 2;
 };
 
-function poorOrchids(orchid) {
-	return orchid.updates[orchid.updates.length - 1].health == 1;
+function getPoorPlants(plant) {
+	return plant.updates[plant.updates.length - 1].health == 1;
 };
 
-function getLivingPlants(plant) {
-	return !plant.removed || plant.removed == "";
+function getNonPresentPlants(plant) {
+	return plant.updates[plant.updates.length - 1].present === "No";
+};
+
+function getPresentPlants(plant) {
+	return plant.updates[plant.updates.length - 1].present === "Yes";
 };
 
 function getYears(plants) {
@@ -856,66 +675,6 @@ function getYears(plants) {
 		}
 	}
 	return years.sort(function(a,b){return a-b});
-}
-
-function getPlantCountPerYear(plants, health) {
-	var years = getYears(plants);
-	var counts = [];
-	for (year in years){
-		counts[year] = 0;
-	}
-	for (p in plants){
-		var plant = plants[p];
-		for (u in plant.updates) {
-			var update = plant.updates[u];
-			if (health) {
-				if (update.health == health) {
-					var year = parseInt(update.updated);
-					counts[years.indexOf(year)]++;
-					if (u == plant.updates.length - 1) {
-						var endYear;
-						if (!plant.removed || plant.removed == "") {
-							endYear = parseInt(new Date().getFullYear());
-							for (var i = year + 1; i <= endYear; i++) {
-								counts[years.indexOf(i)]++;
-							}
-						} else {
-							endYear = parseInt(plant.removed);
-							for (var i = year + 1; i < endYear; i++) {
-								counts[years.indexOf(i)]++;
-							}
-						}
-					}
-				}
-			} else {
-				var year = parseInt(update.updated);
-				counts[years.indexOf(year)]++;
-				if (u == plant.updates.length - 1) {
-					var endYear;
-					if (!plant.removed || plant.removed == "") {
-						endYear = parseInt(new Date().getFullYear());
-						for (var i = year + 1; i <= endYear; i++) {
-							counts[years.indexOf(i)]++;
-						}
-					} else {
-						endYear = parseInt(plant.removed);
-						for (var i = year + 1; i < endYear; i++) {
-							counts[years.indexOf(i)]++;
-						}
-					}
-				}
-			}
-		}
-	}
-	return counts;
-}
-
-function getMediumPlantsPerYear(plants) {
-
-}
-
-function getPoorPlantsPerYear(plants) {
-
 }
 
 function findPlantIndexById(array, id) {

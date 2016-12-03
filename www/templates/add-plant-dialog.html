@@ -2,7 +2,7 @@
 	{{error}}
 </div>
 <div class="card dialogCard">
-	<div class="item item-divider"> 
+	<div class="item item-divider">
           Plant ID
 	</div>
 	<label class="item item-input">
@@ -10,7 +10,7 @@
 	</label>
 </div>
 <div class="card dialogCard">
-	<div class="item item-divider"> 
+	<div class="item item-divider">
           Location: {{plant.x | number: 2}}cm, {{plant.y | number: 2}}cm
 	</div>
 	<label class="item-input">
@@ -24,24 +24,38 @@
 </div>
 <div class="card dialogCard">
 	<div class="item item-divider">
-          Health
-	</div>
-	<ion-radio ng-model="plant.updates[0].health" ng-repeat="item in healths" ng-value="item.value" name="health">{{item.health}}</ion-radio>
-</div>
-<div class="card dialogCard">
-	<div class="item item-divider"> 
           Depth
 	</div>
 	<ion-radio ng-model="plant.depth" ng-repeat="item in depths" ng-value="item" name="depth">{{item}}</ion-radio>
 </div>
 <div class="card dialogCard">
-	<div class="item item-divider"> 
+	<div class="item item-divider">
+          Surface Prep
+	</div>
+	<ion-radio ng-model="plant.surfacePrep" ng-repeat="item in prep" ng-value="item" name="prep">{{item}}</ion-radio>
+</div>
+<div class="card dialogCard">
+	<div class="item item-divider">
           Parentage
 	</div>
 	<ion-radio ng-model="plant.parent" ng-repeat="item in parents" ng-value="item" name="parentage">{{item}}</ion-radio>
 </div>
 <div class="card dialogCard">
-	<div class="item item-divider"> 
+	<div class="item item-divider">
+          Health
+	</div>
+	<ion-radio ng-model="plant.updates[0].health" ng-repeat="item in healths" ng-value="item.value" name="health">{{item.health}}</ion-radio>
+</div>
+<div class="card dialogCard">
+	<div class="item item-divider">
+          Health
+	</div>
+	<label class="item item-input">
+		<input type="number" placeholder="Plant Height" name="number" ng-model="plant.updates[0].height">
+	</label>
+</div>
+<div class="card dialogCard">
+	<div class="item item-divider">
           Number of Shoots
 	</div>
 	<label class="item item-input">
@@ -49,7 +63,28 @@
 	</label>
 </div>
 <div class="card dialogCard">
-	<div class="item item-divider"> 
+	<div class="item item-divider">
+          Number of Leaves
+	</div>
+	<label class="item item-input">
+		<input type="number" placeholder="Number of Leaves" name="leaves" ng-model="plant.updates[0].leaves">
+	</label>
+</div>
+<div class="card dialogCard" ng-show="plant.updates[0].leaves > 0">
+	<div class="item item-divider">
+          Lowest Leaf
+	</div>
+	<label class="item item-input">
+		<span class="input-label">Width (cm):</span>
+		<input type="number" placeholder="Number of Leaves" name="lowestWidth" ng-model="plant.updates[0].lowestLeafWidth">
+	</label>
+	<label class="item item-input">
+		<span class="input-label">Length (cm):</span>
+		<input type="number" placeholder="Number of Leaves" name="lowesthLength" ng-model="plant.updates[0].lowestLeafLength">
+	</label>
+</div>
+<div class="card dialogCard">
+	<div class="item item-divider">
           Additional Comments
 	</div>
 	<label class="item item-input">
