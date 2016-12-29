@@ -5,13 +5,15 @@
 			<div class="input-label">
 				Select a Graph
 			</div>
-			<select class="borderless" name="graphSelect" id="graphSelect" 
+			<select class="borderless" name="graphSelect" id="graphSelect"
 				ng-options="graph for graph in graphs"
 				ng-model="selectedGraph"
 				ng-change="loadGraph(selectedGraph)">
 			</select>
 		</label>
-		<div id="graph" style="min-width: 300px; margin: 0 auto"></div>
+    <canvas id="line" class="chart chart-line" chart-data="data"
+      chart-labels="labels" chart-series="series" chart-options="options">
+    </canvas
 	</div>
   </ion-content>
 </ion-view>
