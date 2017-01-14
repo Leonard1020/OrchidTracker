@@ -73,7 +73,6 @@ angular.module('starter.services', [])
 			});
 		},
 		putPlants: function(plants, id, success, failure) {
-			console.log(plants);
 			var ref = firebase.database().ref().child('plots').child(id);
 			$firebaseObject(ref).$loaded().then(function(plot) {
 				plot.plants = plants;

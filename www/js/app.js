@@ -5,7 +5,20 @@
 // the 2nd parameter is an array of 'requires'
 // 'starter.services' is found in services.js
 // 'starter.controllers' is found in controllers.js
-angular.module('starter', ['ionic', 'firebase', 'chart.js', 'ngMaterial', 'ionic.service.core', 'starter.controllers', 'starter.services'])
+angular.module('starter', [
+  'ionic',
+  'firebase',
+  'chart.js',
+  'ngMaterial',
+  'ionic.service.core',
+  'starter.controllers.nav',
+  'starter.controllers.login',
+  'starter.controllers.status',
+  'starter.controllers.grid',
+  'starter.controllers.update',
+  'starter.controllers.graph',
+  'starter.services'
+])
 
 .run(function($ionicPlatform) {
   $ionicPlatform.ready(function() {

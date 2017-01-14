@@ -52,6 +52,22 @@
 		{{info.parentage}}
 	</label>
 </div>
+<div class="card dialogCard">
+	<div class="item item-divider">
+					Health
+	</div>
+	<label class="item">
+		{{healths[info.updates[0].health - 1].health}}
+	</label>
+</div>
+<div class="card dialogCard">
+	<div class="item item-divider">
+					Number of Shoots
+	</div>
+	<label class="item">
+		{{info.updates[0].shoots}}
+	</label>
+</div>
 <div>
 	<div class="card dialogCard">
 		<div class="item item-divider">
@@ -63,24 +79,10 @@
 <div ng-show="info.updates[info.updates.length - 1].present === 'Yes'">
 	<div class="card dialogCard">
 		<div class="item item-divider">
-	          Health
-		</div>
-		<ion-radio ng-model="info.updates[info.updates.length - 1].health" ng-repeat="item in healths" ng-value="item.value" name="health">{{item.health}}</ion-radio>
-	</div>
-	<div class="card dialogCard">
-		<div class="item item-divider">
 	          Height (cm)
 		</div>
 		<label class="item item-input">
 			<input type="number" placeholder="Plant Height" name="number" ng-model="info.updates[info.updates.length - 1].height">
-		</label>
-	</div>
-	<div class="card dialogCard">
-		<div class="item item-divider">
-	          Number of Shoots
-		</div>
-		<label class="item item-input">
-			<input type="number" placeholder="Number of Shoots" name="number" ng-model="info.updates[info.updates.length - 1].shoots">
 		</label>
 	</div>
 	<div class="card dialogCard">
@@ -109,8 +111,8 @@
 	<div class="item item-divider">
           Additional Comments
 	</div>
-	<label class="item">
-		{{info.updates[info.updates.length - 1].comment}}
+	<label class="item item-input">
+		<textarea placeholder="Additional Comments">{{info.updates[info.updates.length - 1].comment}}</textarea>
 	</label>
 </div>
 </body>
