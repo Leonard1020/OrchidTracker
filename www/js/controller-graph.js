@@ -32,24 +32,30 @@ angular.module('starter.controllers.graph', [])
 						continue;
 
 					var time = update.updated.split('T')[0];
-					var date = $scope.data.find(point => point.x == time);
+					var date = $scope.data.find(point => point.time == time);
 
 					if (date) {
-						date.y++;
+						date.count++;
 					} else {
-						$scope.data.push({x: time, y: 1});
+						$scope.data.push({time: time, count: 1});
 					}
 				}
 			}
 			$scope.data.sort(function(a,b){
-			  return new Date(b.x) - new Date(a.x);
+			  return new Date(b.time) - new Date(a.time);
 			});
-			$scope.data = [$scope.data];
+			$scope.labels = $scope.data.map(set => set.time);
+			$scope.data = [$scope.data.map(set => set.count)];
+
 		  $scope.options = {
+				layout: {
+			    padding: 20
+			  },
 		    scales: {
 					xAxes: [
 						{
 							type: 'time',
+							barPercentage: 0.2,
 							position: 'bottom'
 						}
 					],

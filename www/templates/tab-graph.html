@@ -1,4 +1,4 @@
-<ion-view view-title="Graph" class="centerMax">
+<ion-view view-title="Graph" style="width: 100%">
   <ion-content>
 	<div class="alignCenter">
 		<label class="item item-input item-select">
@@ -11,9 +11,11 @@
 				ng-change="loadGraph(selectedGraph)">
 			</select>
 		</label>
-    <canvas id="line" class="chart chart-line" chart-data="data"
-      chart-labels="labels" chart-series="series" chart-options="options">
-    </canvas
+    <div layout="row" layout-align="center center">
+      <canvas class="chart chart-bar" style="max-width: 1000px; padding-right: 10px;" chart-data="data"
+        chart-labels="labels" chart-series="series" chart-options="options">
+      </canvas>
+    </div>
 	</div>
   </ion-content>
 </ion-view>
