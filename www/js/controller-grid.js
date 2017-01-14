@@ -167,9 +167,7 @@ angular.module('starter.controllers.grid', [])
 			legend: {
 				enabled: true,
 				align: 'left',
-        width: 300,
-				maxHeight: 100,
-        itemWidth: 200,
+				maxHeight: 100
 			},
 			plotOptions: {
 				scatter: {
