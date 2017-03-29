@@ -21,7 +21,7 @@ angular.module('starter.controllers.login', [])
   		$('#circle').hide();
   	}
   };
-
+/*
   $scope.signInWithGoogle = function() {
   	try {
   		AuthService.signInWithGoogle(function(response) {
@@ -34,7 +34,7 @@ angular.module('starter.controllers.login', [])
   		$scope.error = 'Sign in failed';
   	}
   };
-
+*/
   $scope.openPassResetDialog = function() {
     $scope.error = '';
 		$scope.data = {
@@ -69,7 +69,7 @@ angular.module('starter.controllers.login', [])
 			]
 		});
   };
-
+/*
   $scope.openCreateUserDialog = function() {
 		$scope.error = '';
 		$scope.newUser = {
@@ -123,4 +123,5 @@ angular.module('starter.controllers.login', [])
 			]
 		});
   };
+  */
 })
