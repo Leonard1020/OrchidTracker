@@ -44,7 +44,7 @@
 	<div class="item item-divider">
           Health
 	</div>
-	<ion-radio ng-model="plant.updates[0].health" ng-repeat="item in healths" ng-value="item.value" name="health">{{item.health}}</ion-radio>
+	<ion-radio ng-model="plant.health" ng-repeat="item in healths" ng-value="item.value" name="health">{{item.health}}</ion-radio>
 </div>
 <div class="card dialogCard">
 	<div class="item item-divider">
@@ -59,7 +59,7 @@
           Number of Shoots
 	</div>
 	<label class="item item-input">
-		<input type="number" placeholder="Number of Shoots" name="number" ng-model="plant.updates[0].shoots">
+		<input type="number" placeholder="Number of Shoots" name="number" ng-model="plant.shoots">
 	</label>
 </div>
 <div class="card dialogCard">

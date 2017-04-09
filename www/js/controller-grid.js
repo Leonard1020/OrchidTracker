@@ -45,7 +45,7 @@ angular.module('starter.controllers.grid', [])
 									$scope.plant.y < -100 || $scope.plant.y > 100) {
 							$scope.error = "Location must be between -100 and 100";
 							e.preventDefault();
-						} else if ($scope.plant.updates[0].shoots < 0) {
+						} else if ($scope.plant.shoots < 0) {
 							$scope.error = "Number of shoots cannot be negative";
 							e.preventDefault();
 						} else if ($scope.plant.updates[0].leaves < 0) {
@@ -124,11 +124,11 @@ angular.module('starter.controllers.grid', [])
 							depth: "",
 							parent: "",
 							surfacePrep: "",
+							health: 1,
+							shoots: 0,
 							updates: [
 								{
-									health: 1,
 									height: 0,
-									shoots: 0,
 									leaves: 0,
 									lowestLeafWidth: 0,
 									lowestLeafLength: 0,
@@ -194,6 +194,8 @@ angular.module('starter.controllers.grid', [])
 									id: this.id,
 									x: this.x,
 									y: this.y,
+									health: this.health,
+									shoots: this.shoots,
 									depth: this.depth,
 									surfacePrep: this.surfacePrep,
 									parentage: this.parent,
@@ -219,9 +221,7 @@ angular.module('starter.controllers.grid', [])
 											observer: AuthService.getUser()
 										};
 										if (update.present === "Yes") {
-											update.health = binding.health != null ? binding.health : 1;
 											update.height = binding.height != null ? binding.height : "";
-											update.shoots = binding.shoots != null ? binding.shoots : "";
 											update.leaves = binding.leaves != null ? binding.leaves : "";
 											update.lowestLeafWidth = binding.lowestLeafWidth != null ? binding.lowestLeafWidth : "";
 											update.lowestLeafLength = binding.lowestLeafLength != null ? binding.lowestLeafLength : "";
@@ -356,15 +356,15 @@ angular.module('starter.controllers.grid', [])
 });
 
 function getGoodPlants(plant) {
-	return plant.updates[0].health == 3;
+	return plant.health == 3;
 };
 
 function getMediumPlants(plant) {
-	return plant.updates[0].health == 2;
+	return plant.health == 2;
 };
 
 function getPoorPlants(plant) {
-	return plant.updates[0].health == 1;
+	return plant.health == 1;
 };
 
 function getNonPresentPlants(plant) {

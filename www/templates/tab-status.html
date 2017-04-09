@@ -1,6 +1,10 @@
 <ion-view view-title="Status" class="centerMax">
   <ion-content class="padding">
-    <h2>Plot #{{plot.number}}</h2>
+    <h2 layout="row" layout-align="start center" style="margin:0;">
+      <div flex>Plot #{{plot.number}}</div>
+      <!--<button class="button button-dark button-outline icon ion-camera" style="margin-right:10px;" ng-disabled="!plot" ng-click="takePicture()"></button>-->
+      <button class="button button-dark button-outline icon ion-android-download" ng-disabled="!plot" ng-click="download()"></button>
+    </h2>
   	<div class="card">
       <div class="item item-divider">
           Location and Time
@@ -12,12 +16,6 @@
   		</div>
   	</div>
   	<div class="card">
-      <!--
-      <div layout="row" layout-align="start center" class="item item-divider" ng-style="{ 'padding-top': padding.top, 'padding-bottom': padding.bottom }">
-          <span flex>Plot Summary</span>
-          <i flex="10" class="button button-icon icon ion-camera" ng-show="!authRequired" ng-click="takePicture()"></i>
-      </div>
-      -->
       <div layout="row" layout-align="start center" class="item item-divider">
           Plot Summary
       </div>
