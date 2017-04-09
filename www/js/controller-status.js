@@ -46,7 +46,7 @@ angular.module('starter.controllers.status', [])
 				alert('Failed to save file.');
 			});
 		}, function(err) {});
-}
+	}
 
 	$scope.download = function() {
 	  var isIPad = ionic.Platform.isIPad();
