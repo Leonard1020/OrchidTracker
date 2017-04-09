@@ -1,6 +1,6 @@
 angular.module('starter.controllers.status', [])
 
-.controller('StatusCtrl', function($scope, Plots, AuthService) {
+.controller('StatusCtrl', function($scope, $cordovaCamera, $cordovaFile, Plots, AuthService) {
 	AuthService.authRequired().then(function(response) {
 		$scope.authRequired = false;
 		$scope.padding = {
@@ -19,13 +19,61 @@ angular.module('starter.controllers.status', [])
 		$scope.plantCount = plot.plants.filter(getPresentPlants).length;
 	});
 
-	$scope.download = function() {
+	function downloadOnDevice() {
+		var exportDirectory = "";
+		var subdir = "PlantTrackerPlots";
+		if (cordova.file.documentsDirectory !== null) {
+		    // iOS, OSX
+		    exportDirectory = cordova.file.documentsDirectory;
+		} else if (cordova.file.sharedDirectory !== null) {
+		    // BB10
+		    exportDirectory = cordova.file.sharedDirectory;
+		} else if (cordova.file.externalRootDirectory !== null) {
+		    // Android, BB10
+		    exportDirectory = cordova.file.externalRootDirectory;
+		} else {
+		    // iOS, Android, BlackBerry 10, windows
+		    exportDirectory = cordova.file.DataDirectory;
+		}
 		var csvString = ConvertToCSV($scope.plot);
-		$cordovaFile.writeFile(cordova.file.externalRootDirectory, "plot" + $scope.plot.number + ".csv", finalCSV, true).then(function(result){
-      alert('Success! Export created!');
-    }, function(err) {
-      console.log("ERROR");
-    })
+		var filename = "plot" + $scope.plot.number + ".csv";
+		var filepath = exportDirectory + subdir;
+
+		$cordovaFile.createDir(exportDirectory, subdir, false).then(function(result){
+			$cordovaFile.writeFile(filepath, filename, csvString, true).then(function(result){
+				alert('Succussfully saved ' + filepath + '/' + filename);
+			}, function(err) {
+				alert('Failed to save file.');
+			});
+		}, function(err) {});
+}
+
+	$scope.download = function() {
+	  var isIPad = ionic.Platform.isIPad();
+	  var isIOS = ionic.Platform.isIOS();
+	  var isAndroid = ionic.Platform.isAndroid();
+	  var isWindowsPhone = ionic.Platform.isWindowsPhone();
+
+		if (isAndroid || isIOS || isIPad || isWindowsPhone) {
+			downloadOnDevice();
+			return;
+		}
+
+		var filename = 'plot' + $scope.plot.number + '.csv';
+		var content = ConvertToCSV($scope.plot);
+
+    var pom = document.createElement('a');
+    pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(content));
+    pom.setAttribute('download', filename);
+
+    if (document.createEvent) {
+        var event = document.createEvent('MouseEvents');
+        event.initEvent('click', true, true);
+        pom.dispatchEvent(event);
+    }
+    else {
+        pom.click();
+    }
 	}
 
 	$scope.takePicture = function() {
@@ -83,8 +131,14 @@ function ConvertToCSV(plot) {
 		"July 2016 Leaf Width,\r\n";
 
 	for (var i = 0; i < plot.plants.length; i++) {
+		var addedMay15 = false;
+		var addedJuly15 = false;
+		var addedMay16 = false;
+		var addingJuly16 = false;
+
 		var plant = plot.plants[i];
-		var line = plot.number + "," +
+		var line = plant.id + "," +
+			plot.number + "," +
 			plot.createdBy + "," +
 			plot.started + "," +
 			plot.description + "," +
@@ -111,6 +165,12 @@ function ConvertToCSV(plot) {
 				} else {
 					line += ',';
 				}
+				addedMay15 = true;
+				continue;
+			}
+			if (!addedMay15) {
+				line += ',';
+				addedMay15 = true;
 			}
 			if (update.updated.indexOf("2015-07") > -1) {
 				if (update.present == "Yes") {
@@ -120,9 +180,13 @@ function ConvertToCSV(plot) {
 				} else {
 					line += ',';
 				}
-			}
-			if (update.updated.indexOf("2015-07") > -1 && update.leaves) {
 				line += update.leaves ? update.leaves + "," : ",";
+				addedJuly15 = true;
+				continue;
+			}
+			if (!addedJuly15) {
+				line += ',,'; //present, leaf count
+				addedJuly15 = true;
 			}
 			if (update.updated.indexOf("2016-05") > -1) {
 				if (update.present == "Yes") {
@@ -132,6 +196,12 @@ function ConvertToCSV(plot) {
 				} else {
 					line += ',';
 				}
+				addedMay16 = true;
+				continue;
+			}
+			if (!addedMay16) {
+				line += ',';
+				addedMay16 = true;
 			}
 			if (update.updated.indexOf("2016-07") > -1) {
 				if (update.present == "Yes") {
@@ -145,15 +215,12 @@ function ConvertToCSV(plot) {
 				line += update.height ? update.height + "," : ",";
 				line += update.lowestLeafLength ? update.lowestLeafLength + "," : ",";
 				line += update.lowestLeafWidth ? update.lowestLeafWidth + "," : ",";
+				addingJuly16 = true;
+				continue;
 			}
-			if (update.updated.indexOf("2017-05") > -1) {
-				if (update.present == "Yes") {
-					line += '1,';
-				} else if (update.present == "No") {
-					line += '0,';
-				} else {
-					line += ',';
-				}
+			if (!addingJuly16) {
+				line += ',,,,,'; //present, leaves, height, length, width
+				addingJuly16 = true;
 			}
 		}
 		str += line + '\r\n';

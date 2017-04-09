@@ -17,6 +17,9 @@
   <preference name="android-minSdkVersion" value="16"/>
   <preference name="BackupWebStorage" value="none"/>
   <preference name="SplashScreen" value="screen"/>
+  <preference name="AndroidPersistentFileLocation" value="Compatibility" />
+  <preference name="AndroidExtraFilesystems" value="files,cache, sdcard, cache-external, files-external" />
+  <preference name="iosPersistentFileLocation" value="Compatibility" />
   <feature name="StatusBar">
     <param name="ios-package" value="CDVStatusBar" onload="true"/>
   </feature>

@@ -10,6 +10,8 @@ angular.module('starter', [
   'firebase',
   'chart.js',
   'ngMaterial',
+  'ngCordova',
+  'ngCsv',
   'ionic.service.core',
   'starter.controllers.nav',
   'starter.controllers.login',
