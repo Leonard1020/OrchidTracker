@@ -402,6 +402,6 @@ function getPlotNumbers(getAll, callback) {
 		for (p in plots)
 			if (plots[p].number)
 				plotNumbers.push({id: plots[p].$id, number: plots[p].number});
-		callback(plotNumbers.sort(function(a,b){return a-b}))
+		callback(plotNumbers.sort(function(a,b){return a.number-b.number}))
 	});
 }
