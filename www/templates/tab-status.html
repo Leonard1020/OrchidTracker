@@ -2,7 +2,7 @@
   <ion-content class="padding">
     <h2 layout="row" layout-align="start center" style="margin:0;">
       <div flex>Plot #{{plot.number}}</div>
-      <!--<button class="button button-dark button-outline icon ion-camera" style="margin-right:10px;" ng-disabled="!plot" ng-click="takePicture()"></button>-->
+      <button class="button button-dark button-outline icon ion-camera" style="margin-right:10px;" ng-show="(mobile && !authRequired)" ng-disabled="!plot" ng-click="takePicture()"></button>
       <button class="button button-dark button-outline icon ion-android-download" ng-disabled="!plot" ng-click="download()"></button>
     </h2>
   	<div class="card">
@@ -39,5 +39,13 @@
   			<div>Growth/Decay Rate: N.A.</div>
   		</div>
   	</div>
+    <!--<div class="card">
+      <div class="item item-divider">
+          Picture
+      </div>
+  		<div class="item item-text-wrap">
+  			<div></div>
+  		</div>
+  	</div>-->
   </ion-content>
 </ion-view>

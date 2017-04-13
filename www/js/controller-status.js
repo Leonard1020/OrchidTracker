@@ -11,6 +11,9 @@ angular.module('starter.controllers.status', [])
 		$scope.authRequired = true;
 	});
 
+	var platform = ionic.Platform;
+	$scope.mobile = platform.isIPad() || platform.isIOS() || platform.isAndroid() || platform.isWindowsPhone();
+
 	Plots.get(localStorage.getItem('selectedPlot')).$loaded().then(function(plot) {
 		$scope.plot = plot;
 		if (!plot.plants) {
@@ -49,12 +52,7 @@ angular.module('starter.controllers.status', [])
 	}
 
 	$scope.download = function() {
-	  var isIPad = ionic.Platform.isIPad();
-	  var isIOS = ionic.Platform.isIOS();
-	  var isAndroid = ionic.Platform.isAndroid();
-	  var isWindowsPhone = ionic.Platform.isWindowsPhone();
-
-		if (isAndroid || isIOS || isIPad || isWindowsPhone) {
+	  if ($scope.mobile) {
 			downloadOnDevice();
 			return;
 		}
@@ -79,19 +77,23 @@ angular.module('starter.controllers.status', [])
 	$scope.takePicture = function() {
 		try {
 			var options = {
-		    quality : 75,
+		    quality : 95,
 		    destinationType : Camera.DestinationType.DATA_URL,
 		    sourceType : Camera.PictureSourceType.CAMERA,
 		    allowEdit : true,
-		    encodingType: Camera.EncodingType.JPEG,
-		    targetWidth: 300,
-		    targetHeight: 300,
+		    encodingType: Camera.EncodingType.PNG,
+		    targetWidth: 500,
+		    targetHeight: 500,
 		    popoverOptions: CameraPopoverOptions,
 		    saveToPhotoAlbum: false
 	    };
-
 			$cordovaCamera.getPicture(options).then(function(imageData) {
 	    	$scope.imgURI = "data:image/jpeg;base64," + imageData;
+				Plots.putPicture($scope.imgURI, $scope.plot.number, function(snapshot) {
+					alert("Upload Successful!");
+				}, function(error) {
+					alert("Error occured. Unable to upload file.");
+				});
 	    }, function(err) {
 	      // An error occured. Show a message to the user
 	    });

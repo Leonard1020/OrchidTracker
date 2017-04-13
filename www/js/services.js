@@ -82,6 +82,14 @@ angular.module('starter.services', [])
 			}).catch(function(error) {
 				failure(error);
 			});
+		},
+		putPicture: function(imageData, plotNumber, success, failure) {
+			var storageRef = firebase.storage().ref().child('images');
+			var uploadTask = storageRef.child('plot' + plotNumber + '.jpg').putString(imageData, 'data_url').then(function(snapshot) {
+			  success(snapshot);
+			}).catch(function(error) {
+				failure(error);
+			});
 		}
 	};
 })
